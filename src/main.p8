@@ -28,6 +28,26 @@ game {
     ubyte y
     ubyte found
     ubyte left
+    ubyte board_upperleft = 176
+    ubyte board_upperright = 174
+    ubyte board_lowerleft = 173
+    ubyte board_lowerright = 189
+    ubyte board_upperline = 99
+    ubyte board_lowerline = 99
+    ubyte board_leftline = 98
+    ubyte board_rightline = 98
+    ubyte board_tile_covered = 186 ;will be in reverse or custom character
+    ubyte board_tile_flag = 33
+    ubyte board_tile_bomb = 42
+    ubyte board_tile_num0 = 48
+    ubyte board_tile_num1 = 49
+    ubyte board_tile_num2 = 50
+    ubyte board_tile_num3 = 51
+    ubyte board_tile_num4 = 52
+    ubyte board_tile_num5 = 53
+    ubyte board_tile_num6 = 54
+    ubyte board_tile_num7 = 55
+    ubyte board_tile_num8 = 56
 
     sub draw_title() {
         txt.plot(board_topx+(col_count / 2 -8),0)
@@ -57,31 +77,102 @@ game {
 
     sub draw_playboard(){
         txt.plot(board_topx,board_topy)
-        txt.chrout(176) ;upperleft corner
-        linepart()
-        txt.chrout(174) ;upperright corner
+        txt.chrout(board_upperleft)
+        upperlinepart()
+        txt.chrout(board_upperright) ;upperright corner
         txt.plot(board_topx,board_topy+1)
         for y in 2 to row_count - 1 {
-            txt.chrout(98) ;vertical line
+            txt.chrout(board_leftline) ;vertical line
+            txt.rvs_on()
             midpart()
-            txt.chrout(98) ;vertical line
+            txt.rvs_off()
+            txt.chrout(board_rightline) ;vertical line
             txt.plot(board_topx,board_topy+y)
         }
-        txt.chrout(173) ;lowerleft corner
-        linepart()
-        txt.chrout(189) ;lowerright corner
+        txt.chrout(board_lowerleft) ;lowerleft corner
+        lowerlinepart()
+        txt.chrout(board_lowerright) ;lowerright corner
     }
 
-    sub linepart() {
+    sub upperlinepart() {
+            for x in 1 to col_count - 2 {
+                txt.chrout(board_upperline) ;horizontal line
+            }
+        }
+
+    sub lowerlinepart() {
         for x in 1 to col_count - 2 {
-            txt.chrout(99) ;horizontal line
+            txt.chrout(board_lowerline) ;horizontal line
         }
     }
 
     sub midpart() {
         for x in 1 to col_count - 2 {
-            txt.chrout(88) ;covered character
+            txt.chrout(board_tile_covered) ;covered character
         }
+    }
+
+    sub play() {
+        col_current=board_topx + 1
+        row_current=board_topy + 1
+        invert_char(col_current,row_current)
+        repeat {
+            if cbm.STOP2()
+                return 0
+
+            ubyte key = cbm.GETIN2()
+            when key {
+                3, 27, 'q' -> return 0      ; STOP or Q  aborts  (and ESC?)
+                '\n',' ' -> {
+                    if num_files>0 {
+                        void strings.copy(peekw(filename_ptrs_start + (top_index+selected_line)*$0002), chosen_filename)
+                        return chosen_filename
+                    }
+                    return 0
+                }
+                '[', 157 -> {       ; cursor left
+                    ; previous page of lines
+                    invert(selected_line)
+                    if selected_line==0
+                        repeat max_lines scroll_list_backward()
+                    selected_line = 0
+                    invert(selected_line)
+                    print_up_and_down()
+                }
+                ']', 29 -> {        ; cursor right
+                    if num_files>0 {
+                        ; next page of lines
+                        invert(selected_line)
+                        if selected_line == max_lines-1
+                            repeat max_lines scroll_list_forward()
+                        selected_line = num_visible_files-1
+                        invert(selected_line)
+                        print_up_and_down()
+                    }
+                }
+                17 -> {     ; down
+                    if num_files>0 {
+                        invert(selected_line)
+                        if selected_line<num_visible_files-1
+                            selected_line++
+                        else if num_files>max_lines
+                            scroll_list_forward()
+                        invert(selected_line)
+                        print_up_and_down()
+                    }
+                }
+                145 -> {    ; up
+                    invert(selected_line)
+                    if selected_line>0
+                        selected_line--
+                    else if num_files>max_lines
+                        scroll_list_backward()
+                    invert(selected_line)
+                    print_up_and_down()
+                }
+            }
+        }
+
     }
 }
 
