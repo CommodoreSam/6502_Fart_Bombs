@@ -13,6 +13,7 @@ main {
         game.draw_title()
         game.draw_scoreboard()
         game.draw_playboard()
+        ubyte success = game.play()
     }
 }
 
@@ -72,7 +73,7 @@ game {
     }
 
     sub invert_char(ubyte x, ubyte y){
-        txt.setchr(x,y,txt.getchr(x,y) ^ 128)
+        txt.setchr(board_topx+x,board_topy+y,txt.getchr(board_topx+x,board_topy+y) ^ 128)
     }
 
     sub draw_playboard(){
@@ -112,9 +113,9 @@ game {
         }
     }
 
-    sub play() {
-        col_current=board_topx + 1
-        row_current=board_topy + 1
+    sub play() -> ubyte {
+        col_current=1
+        row_current=1
         invert_char(col_current,row_current)
         repeat {
             if cbm.STOP2()
@@ -124,51 +125,35 @@ game {
             when key {
                 3, 27, 'q' -> return 0      ; STOP or Q  aborts  (and ESC?)
                 '\n',' ' -> {
-                    if num_files>0 {
-                        void strings.copy(peekw(filename_ptrs_start + (top_index+selected_line)*$0002), chosen_filename)
-                        return chosen_filename
-                    }
                     return 0
                 }
                 '[', 157 -> {       ; cursor left
-                    ; previous page of lines
-                    invert(selected_line)
-                    if selected_line==0
-                        repeat max_lines scroll_list_backward()
-                    selected_line = 0
-                    invert(selected_line)
-                    print_up_and_down()
+                    if col_current > 1 {
+                        invert_char(col_current,row_current)
+                        col_current--
+                        invert_char(col_current,row_current)
+                    }
                 }
                 ']', 29 -> {        ; cursor right
-                    if num_files>0 {
-                        ; next page of lines
-                        invert(selected_line)
-                        if selected_line == max_lines-1
-                            repeat max_lines scroll_list_forward()
-                        selected_line = num_visible_files-1
-                        invert(selected_line)
-                        print_up_and_down()
+                    if col_current < (col_count - 2) {
+                        invert_char(col_current,row_current)
+                        col_current++
+                        invert_char(col_current,row_current)
                     }
                 }
                 17 -> {     ; down
-                    if num_files>0 {
-                        invert(selected_line)
-                        if selected_line<num_visible_files-1
-                            selected_line++
-                        else if num_files>max_lines
-                            scroll_list_forward()
-                        invert(selected_line)
-                        print_up_and_down()
+                    if row_current < (row_count - 2) {
+                        invert_char(col_current,row_current)
+                        row_current++
+                        invert_char(col_current,row_current)
                     }
                 }
                 145 -> {    ; up
-                    invert(selected_line)
-                    if selected_line>0
-                        selected_line--
-                    else if num_files>max_lines
-                        scroll_list_backward()
-                    invert(selected_line)
-                    print_up_and_down()
+                    if row_current > 1 {
+                        invert_char(col_current,row_current)
+                        row_current--
+                        invert_char(col_current,row_current)
+                    }
                 }
             }
         }
