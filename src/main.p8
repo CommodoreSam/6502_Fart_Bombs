@@ -4,6 +4,8 @@
 
 %import textio
 %import strings
+%import syslib
+%import conv
 %zeropage basicsafe
 
 main {
@@ -49,8 +51,18 @@ game {
     ubyte board_tile_num6 = 54
     ubyte board_tile_num7 = 55
     ubyte board_tile_num8 = 56
+    ubyte border_color = 6
+    ubyte board_bgcolor = 0
+    ubyte board_fgcolor = 7
+    ubyte board_tile_color = 7
+    ubyte board_tile_revcolor = 14
+    ubyte board_tile_flagcolor = 3
 
     sub draw_title() {
+        c64.EXTCOL = border_color
+        c64.BGCOL0 = board_bgcolor
+        txt.cls()
+        txt.color(board_fgcolor)
         txt.plot(board_topx+(col_count / 2 -8),0)
         txt.rvs_on()
         txt.print("6502 fart bombs")
@@ -72,8 +84,42 @@ game {
         board_topy = starty
     }
 
-    sub invert_char(ubyte x, ubyte y){
-        txt.setchr(board_topx+x,board_topy+y,txt.getchr(board_topx+x,board_topy+y) ^ 128)
+    sub cursor_on(ubyte xa, ubyte ya) {
+            txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
+    }
+
+    sub cursor_off(ubyte xb, ubyte yb) {
+        ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
+        when current_char {
+
+            250 -> {
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_color)
+                return
+            }
+            33, 33^128 -> {
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
+                return
+            }
+        }
+    }
+
+    sub flag(ubyte xf, ubyte yf) {
+        if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag or
+            txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag ^ 128 {
+            txt.plot(board_topx+xf, board_topy+yf)
+            txt.color(board_tile_flagcolor)
+            txt.rvs_on()
+            txt.chrout(board_tile_covered)
+            txt.rvs_off()
+        }
+        else {
+            txt.plot(board_topx+xf, board_topy+yf)
+            txt.color(board_tile_flagcolor)
+            txt.rvs_on()
+            txt.chrout(board_tile_flag)
+            txt.rvs_off()
+        }
+        cursor_on(xf,yf)
     }
 
     sub draw_playboard(){
@@ -116,7 +162,7 @@ game {
     sub play() -> ubyte {
         col_current=1
         row_current=1
-        invert_char(col_current,row_current)
+        cursor_on(col_current,row_current)
         repeat {
             if cbm.STOP2()
                 return 0
@@ -129,31 +175,34 @@ game {
                 }
                 '[', 157 -> {       ; cursor left
                     if col_current > 1 {
-                        invert_char(col_current,row_current)
+                        cursor_off(col_current,row_current)
                         col_current--
-                        invert_char(col_current,row_current)
+                        cursor_on(col_current,row_current)
                     }
                 }
                 ']', 29 -> {        ; cursor right
                     if col_current < (col_count - 2) {
-                        invert_char(col_current,row_current)
+                        cursor_off(col_current,row_current)
                         col_current++
-                        invert_char(col_current,row_current)
+                        cursor_on(col_current,row_current)
                     }
                 }
                 17 -> {     ; down
                     if row_current < (row_count - 2) {
-                        invert_char(col_current,row_current)
+                        cursor_off(col_current,row_current)
                         row_current++
-                        invert_char(col_current,row_current)
+                        cursor_on(col_current,row_current)
                     }
                 }
                 145 -> {    ; up
                     if row_current > 1 {
-                        invert_char(col_current,row_current)
+                        cursor_off(col_current,row_current)
                         row_current--
-                        invert_char(col_current,row_current)
+                        cursor_on(col_current,row_current)
                     }
+                }
+                'f' -> {    ; flag
+                    flag(col_current,row_current)
                 }
             }
         }
