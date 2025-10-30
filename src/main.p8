@@ -4,6 +4,7 @@
 
 %import textio
 %import strings
+%import floats
 %import syslib
 %import conv
 %zeropage basicsafe
@@ -11,10 +12,11 @@
 main {
     sub start() {
         ;txt.lowercase();
-        game.set_boardsize(30,20,5,3)
+        game.set_boardsize(30,20,5,3,30)
         game.draw_title()
         game.draw_scoreboard()
         game.draw_playboard()
+        game.set_bombs()
         ubyte success = game.play()
     }
 }
@@ -29,34 +31,39 @@ game {
     ubyte row_current
     ubyte x
     ubyte y
-    ubyte found
-    ubyte left
-    ubyte board_upperleft = 176
-    ubyte board_upperright = 174
-    ubyte board_lowerleft = 173
-    ubyte board_lowerright = 189
-    ubyte board_upperline = 99
-    ubyte board_lowerline = 99
-    ubyte board_leftline = 98
-    ubyte board_rightline = 98
-    ubyte board_tile_covered = 186 ;will be in reverse or custom character
-    ubyte board_tile_flag = 33
-    ubyte board_tile_bomb = 42
-    ubyte board_tile_num0 = 48
-    ubyte board_tile_num1 = 49
-    ubyte board_tile_num2 = 50
-    ubyte board_tile_num3 = 51
-    ubyte board_tile_num4 = 52
-    ubyte board_tile_num5 = 53
-    ubyte board_tile_num6 = 54
-    ubyte board_tile_num7 = 55
-    ubyte board_tile_num8 = 56
-    ubyte border_color = 6
-    ubyte board_bgcolor = 0
-    ubyte board_fgcolor = 7
-    ubyte board_tile_color = 7
-    ubyte board_tile_revcolor = 14
-    ubyte board_tile_flagcolor = 3
+    ubyte bombs_total
+    ubyte bombs_found
+    ubyte bombs_left
+    str[25] board_array
+    const ubyte board_upperleft = 176
+    const ubyte board_upperright = 174
+    const ubyte board_lowerleft = 173
+    const ubyte board_lowerright = 189
+    const ubyte board_upperline = 99
+    const ubyte board_lowerline = 99
+    const ubyte board_leftline = 98
+    const ubyte board_rightline = 98
+    const ubyte board_tile_covered = 186 ;will be in reverse or custom character
+    const ubyte board_tile_revcovered = 250
+    const ubyte board_tile_flag = 33
+    const ubyte board_tile_revflag = 161
+    const ubyte board_tile_bomb = 42
+    const ubyte board_tile_num0 = 48
+    const ubyte board_tile_num1 = 49
+    const ubyte board_tile_num2 = 50
+    const ubyte board_tile_num3 = 51
+    const ubyte board_tile_num4 = 52
+    const ubyte board_tile_num5 = 53
+    const ubyte board_tile_num6 = 54
+    const ubyte board_tile_num7 = 55
+    const ubyte board_tile_num8 = 56
+    const ubyte board_tile_open = 32
+    const ubyte border_color = 6
+    const ubyte board_bgcolor = 0
+    const ubyte board_fgcolor = 7
+    const ubyte board_tile_color = 7
+    const ubyte board_tile_revcolor = 14
+    const ubyte board_tile_flagcolor = 3
 
     sub draw_title() {
         c64.EXTCOL = border_color
@@ -72,16 +79,46 @@ game {
     sub draw_scoreboard() {
         txt.plot(board_topx,board_topy - 1)
         txt.print("found: ")
-        txt.print_ub(found)
+        txt.print_ub(bombs_found)
         txt.print(" left: ")
-        txt.print_ub(left)
+        txt.print_ub(bombs_left)
     }
 
-   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
+   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty, ubyte bombs) {
         col_count = columns
         row_count = rows
         board_topx = startx
         board_topy = starty
+        bombs_total = bombs
+    }
+
+    sub set_bombs() {
+        ;tell player bombs are being set
+        txt.plot(2,board_topy + row_count + 1)
+        txt.color(5)
+        txt.print("one night when the moon was green...")
+        ;place bombs
+        bombs_total = (row_count*col_count/.05) as ubyte
+        ;calc numb tiles
+        sys.wait(200)
+        txt.plot(1,board_topy + row_count + 1)
+        txt.color(5)
+        txt.rvs_on()
+        txt.print("wasd")
+        txt.rvs_off()
+        txt.print("=move ")
+        txt.rvs_on()
+        txt.print("f")
+        txt.rvs_off()
+        txt.print("=flag ")
+        txt.rvs_on()
+        txt.print("space")
+        txt.rvs_off()
+        txt.print("=uncover ")
+        txt.rvs_on()
+        txt.print("l")
+        txt.rvs_off()
+        txt.print("=leave")
     }
 
     sub cursor_on(ubyte xa, ubyte ya) {
@@ -92,11 +129,11 @@ game {
         ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
         when current_char {
 
-            250 -> {
+            board_tile_covered, board_tile_revcovered -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_color)
                 return
             }
-            33, 33^128 -> {
+            board_tile_flag, board_tile_revflag -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
                 return
             }
@@ -169,32 +206,29 @@ game {
 
             ubyte key = cbm.GETIN2()
             when key {
-                3, 27, 'q' -> return 0      ; STOP or Q  aborts  (and ESC?)
-                '\n',' ' -> {
-                    return 0
-                }
-                '[', 157 -> {       ; cursor left
+                3, 'l' -> return 0      ; STOP or Q  aborts  (and ESC?)
+                'a', 157 -> {       ; cursor left
                     if col_current > 1 {
                         cursor_off(col_current,row_current)
                         col_current--
                         cursor_on(col_current,row_current)
                     }
                 }
-                ']', 29 -> {        ; cursor right
+                'd', 29 -> {        ; cursor right
                     if col_current < (col_count - 2) {
                         cursor_off(col_current,row_current)
                         col_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                17 -> {     ; down
+                's', 17 -> {     ; down
                     if row_current < (row_count - 2) {
                         cursor_off(col_current,row_current)
                         row_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                145 -> {    ; up
+                'w', 145 -> {    ; up
                     if row_current > 1 {
                         cursor_off(col_current,row_current)
                         row_current--
