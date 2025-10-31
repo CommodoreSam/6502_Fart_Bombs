@@ -4,6 +4,7 @@
 
 %import textio
 %import strings
+%import math
 %import floats
 %import syslib
 %import conv
@@ -33,7 +34,32 @@ game {
     ubyte bombs_total
     ubyte bombs_found
     ubyte bombs_left
-    str[25] bomb_array
+    ubyte[40] row0
+    ubyte[40] row1
+    ubyte[40] row2
+    ubyte[40] row3
+    ubyte[40] row4
+    ubyte[40] row5
+    ubyte[40] row6
+    ubyte[40] row7
+    ubyte[40] row8
+    ubyte[40] row9
+    ubyte[40] row10
+    ubyte[40] row11
+    ubyte[40] row12
+    ubyte[40] row13
+    ubyte[40] row14
+    ubyte[40] row15
+    ubyte[40] row16
+    ubyte[40] row17
+    ubyte[40] row18
+    ubyte[40] row19
+    ubyte[40] row20
+    ubyte[40] row21
+    ubyte[40] row22
+    ubyte[40] row23
+    ubyte[40] row24
+    uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22, row23, row24]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
@@ -47,16 +73,7 @@ game {
     const ubyte board_tile_flag = 33
     const ubyte board_tile_revflag = 161
     const ubyte board_tile_bomb = 42
-    const ubyte board_tile_num0 = 48
-    const ubyte board_tile_num1 = 49
-    const ubyte board_tile_num2 = 50
-    const ubyte board_tile_num3 = 51
-    const ubyte board_tile_num4 = 52
-    const ubyte board_tile_num5 = 53
-    const ubyte board_tile_num6 = 54
-    const ubyte board_tile_num7 = 55
-    const ubyte board_tile_num8 = 56
-    const ubyte board_tile_open = 32
+    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     const ubyte border_color = 6
     const ubyte board_bgcolor = 0
     const ubyte board_fgcolor = 7
@@ -84,14 +101,14 @@ game {
         sys.wait(150)
         txt.cls()
         txt.color(board_fgcolor)
-        txt.plot(board_topx+(col_count / 2 -8),0)
+        txt.plot(board_topx+(col_count / 2 -9),0)
         txt.rvs_on()
-        txt.print("6502 fart bombs")
+        txt.print(" 6502 fart bombs ")
         txt.rvs_off()
     }
 
     sub draw_scoreboard() {
-        txt.plot(board_topx,board_topy - 1)
+        txt.plot(board_topx + 1,board_topy - 1)
         txt.print("found: ")
         txt.print_ub(bombs_found)
         txt.print(" left: ")
@@ -108,40 +125,16 @@ game {
 
     sub set_bombs() {
         ;tell player bombs are being set
-        txt.plot(2,board_topy + row_count + 1)
+        txt.plot(5,board_topy + row_count + 1)
         txt.color(5)
-        txt.print("one night when the moon was green...")
+        txt.print("gas pressure is rising...")
         ;place bombs
-        bombs_total = (row_count*col_count/.05) as ubyte
-        str[] bomb_array_line = ["0000000000000000000000000000000000000000"]*25
-
-         bomb_array_line[0] = "00001*1001110000000000111001*10000000000"
-         bomb_array_line[1] = "0000111001*111111100001*1001110000011100"
-         bomb_array_line[2] = "0000000001111*12*2000011100000000001*100"
-         bomb_array_line[3] = "1221000000000002*20000000000000001121100"
-         bomb_array_line[4] = "1**1000011100001110000001110000001*10000"
-         bomb_array_line[5] = "122100001*100000000000001*10000001110000"
-         bomb_array_line[6] = "1100000011100000000011101110000000000000"
-         bomb_array_line[7] = "*10000000000000000001*100000000000000111"
-         bomb_array_line[8] = "11111000001110000000111000000000000001*1"
-         bomb_array_line[9] = "001*1000001*1000000000000000011100000111"
-        bomb_array_line[10] = "001110000011100011100000000001*100000000"
-        bomb_array_line[11] = "00000111000000001*1000011100011100000000"
-        bomb_array_line[12] = "000001*10001110011100001*100000000001110"
-        bomb_array_line[13] = "011101110001*100000011111100000000001*10"
-        bomb_array_line[14] = "01*100001111110000001*100000000011101110"
-        bomb_array_line[15] = "121100001*10000111001110001110001*100000"
-        bomb_array_line[16] = "*101110011100001*1000000001*100011100000"
-        bomb_array_line[17] = "1101*10000111001110001110011100000000111"
-        bomb_array_line[18] = "00011111101*1000000001*100000001110001*1"
-        bomb_array_line[19] = "0000001*101110000111011101110001*1000111"
-        bomb_array_line[20] = "110000111001110001*1000001*1000111001110"
-        bomb_array_line[21] = "*10011100001*100011100000112110000001*10"
-        bomb_array_line[22] = "11001*1000011100001110000001*10000001110"
-        bomb_array_line[23] = "0000111111000000001*10000001110111000000"
-        bomb_array_line[24] = "00000001*10000000011100000000001*1000000"
+        bombs_total = bomb_rand()
+        bombs_left=bombs_total
+        game.draw_scoreboard()
+        sys.wait(200)
         ;calc numb tiles
-        sys.wait(150)
+        set_numbtiles()
         txt.plot(1,board_topy + row_count + 1)
         txt.color(5)
         txt.rvs_on()
@@ -160,6 +153,65 @@ game {
         txt.print("l")
         txt.rvs_off()
         txt.print("=leave")
+    }
+
+    sub bomb_rand() -> ubyte {
+        ubyte total=0
+        ubyte col_index
+        ubyte row_index
+        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+                ;pick random number between 0 and 5 equates to 4 its a bomb
+                if math.randrange(7) == 4 {
+                    set_value(col_index,row_index,board_tile_bomb)
+                    total++
+                    ;txt.plot(col_index,row_index)
+                    ;txt.chrout(board_tile_bomb)
+                    }
+            }
+        }
+        return total
+    }
+
+    sub set_numbtiles() {
+        ubyte num_around=0
+        ubyte col_index
+        ubyte row_index
+        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+                ;pick check for bombs around each tile and assign numtile
+                if is_bomb(col_index,row_index) == 0 {
+                    num_around = is_bomb(col_index-1,row_index-1) + is_bomb(col_index-1,row_index) + is_bomb(col_index-1,row_index+1) + is_bomb(col_index,row_index-1) + is_bomb(col_index,row_index+1) + is_bomb(col_index+1,row_index-1) + is_bomb(col_index+1,row_index) + is_bomb(col_index+1,row_index+1)
+                    set_value(col_index,row_index,board_tile_num[num_around])
+                    ;txt.plot(col_index,row_index)
+                    ;txt.chrout(board_tile_num[num_around])
+                }
+                num_around=0
+            }
+        }
+
+    }
+
+    sub set_value(ubyte col, ubyte row, ubyte value) {
+        ;set a single value in the bomb_array
+        uword temp
+        temp = bomb_array[row]
+        temp[col] = value
+        bomb_array[row] = temp
+    }
+
+    sub get_value(ubyte col, ubyte row) -> ubyte {
+        ;get a single value in the bomb_array
+        uword temp
+        temp = bomb_array[row]
+        return temp[col]
+    }
+
+    sub is_bomb(ubyte col, ubyte row) -> ubyte {
+        if get_value(col,row) == '*'
+            return 1
+        else
+            return 0
     }
 
     sub cursor_on(ubyte xa, ubyte ya) {
