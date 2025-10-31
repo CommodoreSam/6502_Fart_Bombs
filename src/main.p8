@@ -22,7 +22,6 @@ main {
 }
 
 game {
-
     ubyte col_count
     ubyte row_count
     ubyte board_topx
@@ -199,6 +198,7 @@ game {
     sub play() -> ubyte {
         col_current=1
         row_current=1
+        @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
             if cbm.STOP2()
