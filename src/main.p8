@@ -33,7 +33,7 @@ game {
     ubyte bombs_total
     ubyte bombs_found
     ubyte bombs_left
-    str[25] board_array
+    str[25] bomb_array
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
@@ -68,6 +68,21 @@ game {
         c64.EXTCOL = border_color
         c64.BGCOL0 = board_bgcolor
         txt.cls()
+        txt.plot(8,4)
+        txt.rvs_on()
+        txt.print("                        ")
+        txt.plot(8,5)
+        txt.print("     6502 fart bombs    ")
+        txt.plot(8,6)
+        txt.print("                        ")
+        txt.plot(8,7)
+        txt.print("      @commodoresam     ")
+        txt.plot(8,8)
+        txt.print("          2025          ")
+        txt.plot(8,9)
+        txt.print("                        ")
+        sys.wait(150)
+        txt.cls()
         txt.color(board_fgcolor)
         txt.plot(board_topx+(col_count / 2 -8),0)
         txt.rvs_on()
@@ -98,8 +113,35 @@ game {
         txt.print("one night when the moon was green...")
         ;place bombs
         bombs_total = (row_count*col_count/.05) as ubyte
+        str[] bomb_array_line = ["0000000000000000000000000000000000000000"]*25
+
+         bomb_array_line[0] = "00001*1001110000000000111001*10000000000"
+         bomb_array_line[1] = "0000111001*111111100001*1001110000011100"
+         bomb_array_line[2] = "0000000001111*12*2000011100000000001*100"
+         bomb_array_line[3] = "1221000000000002*20000000000000001121100"
+         bomb_array_line[4] = "1**1000011100001110000001110000001*10000"
+         bomb_array_line[5] = "122100001*100000000000001*10000001110000"
+         bomb_array_line[6] = "1100000011100000000011101110000000000000"
+         bomb_array_line[7] = "*10000000000000000001*100000000000000111"
+         bomb_array_line[8] = "11111000001110000000111000000000000001*1"
+         bomb_array_line[9] = "001*1000001*1000000000000000011100000111"
+        bomb_array_line[10] = "001110000011100011100000000001*100000000"
+        bomb_array_line[11] = "00000111000000001*1000011100011100000000"
+        bomb_array_line[12] = "000001*10001110011100001*100000000001110"
+        bomb_array_line[13] = "011101110001*100000011111100000000001*10"
+        bomb_array_line[14] = "01*100001111110000001*100000000011101110"
+        bomb_array_line[15] = "121100001*10000111001110001110001*100000"
+        bomb_array_line[16] = "*101110011100001*1000000001*100011100000"
+        bomb_array_line[17] = "1101*10000111001110001110011100000000111"
+        bomb_array_line[18] = "00011111101*1000000001*100000001110001*1"
+        bomb_array_line[19] = "0000001*101110000111011101110001*1000111"
+        bomb_array_line[20] = "110000111001110001*1000001*1000111001110"
+        bomb_array_line[21] = "*10011100001*100011100000112110000001*10"
+        bomb_array_line[22] = "11001*1000011100001110000001*10000001110"
+        bomb_array_line[23] = "0000111111000000001*10000001110111000000"
+        bomb_array_line[24] = "00000001*10000000011100000000001*1000000"
         ;calc numb tiles
-        sys.wait(200)
+        sys.wait(150)
         txt.plot(1,board_topy + row_count + 1)
         txt.color(5)
         txt.rvs_on()
