@@ -12,13 +12,16 @@
 
 main {
     sub start() {
-        ;txt.lowercase();
-        game.set_boardsize(30,20,5,3,30)
-        game.draw_title()
-        game.draw_scoreboard()
-        game.draw_playboard()
-        game.set_bombs()
-        ubyte success = game.play()
+        ubyte status
+        do {
+            status=0
+            game.set_boardsize(30,20,5,3,30)
+            game.draw_title()
+            game.draw_scoreboard()
+            game.draw_playboard()
+            game.set_bombs()
+            status = game.play()
+        } until status == 0
     }
 }
 
@@ -84,6 +87,7 @@ game {
     sub draw_title() {
         c64.EXTCOL = border_color
         c64.BGCOL0 = board_bgcolor
+        txt.color(7)
         txt.cls()
         txt.plot(8,4)
         txt.rvs_on()
@@ -132,10 +136,11 @@ game {
         bombs_total = bomb_rand()
         bombs_left=bombs_total
         game.draw_scoreboard()
-        sys.wait(200)
         ;calc numb tiles
         set_numbtiles()
-        txt.plot(1,board_topy + row_count + 1)
+        txt.plot(5,board_topy + row_count + 1)
+        txt.print("                          ")
+        txt.plot(board_topx,board_topy + row_count)
         txt.color(5)
         txt.rvs_on()
         txt.print("wasd")
@@ -149,10 +154,15 @@ game {
         txt.print("space")
         txt.rvs_off()
         txt.print("=uncover ")
+        txt.plot(board_topx,board_topy + row_count+1)
         txt.rvs_on()
         txt.print("l")
         txt.rvs_off()
-        txt.print("=leave")
+        txt.print("=leave          ")
+        txt.rvs_on()
+        txt.print("n")
+        txt.rvs_off()
+        txt.print("=new game")
     }
 
     sub bomb_rand() -> ubyte {
@@ -300,7 +310,8 @@ game {
 
             ubyte key = cbm.GETIN2()
             when key {
-                3, 'l' -> return 0      ; STOP or Q  aborts  (and ESC?)
+                'l' -> return 0     ; quit
+                'n' -> return 1     ;new game
                 'a', 157 -> {       ; cursor left
                     if col_current > 1 {
                         cursor_off(col_current,row_current)
