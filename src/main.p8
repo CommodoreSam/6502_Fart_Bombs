@@ -76,13 +76,14 @@ game {
     const ubyte board_tile_flag = 33
     const ubyte board_tile_revflag = 161
     const ubyte board_tile_bomb = 42
-    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     const ubyte border_color = 6
     const ubyte board_bgcolor = 0
     const ubyte board_fgcolor = 7
     const ubyte board_tile_color = 7
     const ubyte board_tile_revcolor = 14
     const ubyte board_tile_flagcolor = 3
+    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
+    ubyte[] board_tile_num_color = [board_bgcolor,14,9,5,15,16,2,11,13]
 
     sub draw_title() {
         c64.EXTCOL = border_color
@@ -175,8 +176,6 @@ game {
                 if math.randrange(7) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
-                    ;txt.plot(col_index,row_index)
-                    ;txt.chrout(board_tile_bomb)
                     }
             }
         }
@@ -193,8 +192,6 @@ game {
                 if is_bomb(col_index,row_index) == 0 {
                     num_around = is_bomb(col_index-1,row_index-1) + is_bomb(col_index-1,row_index) + is_bomb(col_index-1,row_index+1) + is_bomb(col_index,row_index-1) + is_bomb(col_index,row_index+1) + is_bomb(col_index+1,row_index-1) + is_bomb(col_index+1,row_index) + is_bomb(col_index+1,row_index+1)
                     set_value(col_index,row_index,board_tile_num[num_around])
-                    ;txt.plot(col_index,row_index)
-                    ;txt.chrout(board_tile_num[num_around])
                 }
                 num_around=0
             }
@@ -225,7 +222,11 @@ game {
     }
 
     sub cursor_on(ubyte xa, ubyte ya) {
-            txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
+            if txt.getchr(board_topx+xa,board_topy+ya) == ' ' {
+                txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
+            } else {
+                txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
+            }
     }
 
     sub cursor_off(ubyte xb, ubyte yb) {
@@ -238,6 +239,14 @@ game {
             }
             board_tile_flag, board_tile_revflag -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
+                return
+            }
+            ' ','1','2','3','4','5','6','7','8' -> {
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[current_char])
+                return
+            }
+            160 -> {
+                txt.setchr(board_topx+xb,board_topy+yb,' ')
                 return
             }
         }
@@ -261,6 +270,16 @@ game {
         }
         cursor_on(xf,yf)
     }
+
+    sub uncover(ubyte xf, ubyte yf) {
+        if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
+            txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
+            txt.plot(board_topx+xf, board_topy+yf)
+            txt.chrout(get_value(board_topx+xf, board_topy+yf))
+        }
+        cursor_on(xf,yf)
+    }
+
 
     sub draw_playboard(){
         txt.plot(board_topx,board_topy)
@@ -342,6 +361,10 @@ game {
                 }
                 'f' -> {    ; flag
                     flag(col_current,row_current)
+                }
+                ' ' -> {    ; uncover
+                    uncover(col_current,row_current)
+                    cursor_on(col_current,row_current)
                 }
             }
         }
