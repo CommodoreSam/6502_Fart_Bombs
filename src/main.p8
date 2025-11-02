@@ -22,6 +22,7 @@ main {
             game.set_bombs()
             status = game.play()
         } until status == 0
+
     }
 }
 
@@ -222,32 +223,25 @@ game {
     }
 
     sub cursor_on(ubyte xa, ubyte ya) {
-            if txt.getchr(board_topx+xa,board_topy+ya) == ' ' {
-                txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
-            } else {
-                txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
-            }
+        if txt.getchr(board_topx+xa,board_topy+ya) == ' '
+            txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
+        txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
     }
 
     sub cursor_off(ubyte xb, ubyte yb) {
         ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
         when current_char {
-
             board_tile_covered, board_tile_revcovered -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_color)
-                return
             }
             board_tile_flag, board_tile_revflag -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
-                return
             }
-            ' ','1','2','3','4','5','6','7','8' -> {
-                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[current_char])
-                return
+            '1','2','3','4','5','6','7','8' -> {
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[current_char-48])
             }
-            160 -> {
+            ' ', 160 -> {
                 txt.setchr(board_topx+xb,board_topy+yb,' ')
-                return
             }
         }
     }
@@ -271,13 +265,14 @@ game {
         cursor_on(xf,yf)
     }
 
-    sub uncover(ubyte xf, ubyte yf) {
+    sub uncover(ubyte xf, ubyte yf) -> ubyte {
         if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
             txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
             txt.plot(board_topx+xf, board_topy+yf)
-            txt.chrout(get_value(board_topx+xf, board_topy+yf))
+            ubyte under_char=get_value(board_topx+xf, board_topy+yf)
+            txt.chrout(under_char)
         }
-        cursor_on(xf,yf)
+        return under_char
     }
 
 
@@ -317,6 +312,20 @@ game {
             txt.chrout(board_tile_covered) ;covered character
         }
     }
+
+    sub play_again() -> ubyte {
+        ubyte again = 'x'
+        txt.plot(1,board_topy + row_count)
+        txt.color(5)
+        txt.print("                                     ")
+        txt.plot(1,board_topy + row_count + 1)
+        txt.print("you lose!!! play again (y/n)?        ")
+        do {
+            again = cbm.GETIN2()
+        } until again == 'y' or again == 'n'
+        return again
+    }
+
 
     sub play() -> ubyte {
         col_current=1
@@ -363,8 +372,15 @@ game {
                     flag(col_current,row_current)
                 }
                 ' ' -> {    ; uncover
-                    uncover(col_current,row_current)
+                    ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
+                    if under == 42 or under == 170 {
+                        ubyte again_answer = play_again()
+                        if again_answer == 'y'
+                            return 1
+                        else
+                            return 0
+                    }
                 }
             }
         }
