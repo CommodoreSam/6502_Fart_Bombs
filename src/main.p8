@@ -12,9 +12,8 @@
 
 main {
     sub start() {
-        ubyte status
         do {
-            status=0
+            ubyte status=0
             game.set_boardsize(30,20,5,3,30)
             game.draw_title()
             game.draw_scoreboard()
@@ -27,6 +26,9 @@ main {
 }
 
 game {
+    ubyte bombs_total
+    ubyte bombs_found
+    ubyte bombs_left
     ubyte col_count
     ubyte row_count
     ubyte board_topx
@@ -35,9 +37,6 @@ game {
     ubyte row_current
     ubyte x
     ubyte y
-    ubyte bombs_total
-    ubyte bombs_found
-    ubyte bombs_left
     ubyte[40] row0
     ubyte[40] row1
     ubyte[40] row2
@@ -81,15 +80,19 @@ game {
     const ubyte board_bgcolor = 0
     const ubyte board_fgcolor = 7
     const ubyte board_tile_color = 7
+    const ubyte board_scorecolor = 5
     const ubyte board_tile_revcolor = 14
     const ubyte board_tile_flagcolor = 3
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
-    ubyte[] board_tile_num_color = [board_bgcolor,14,9,5,15,16,2,11,13]
+    ubyte[] board_tile_num_color = [board_bgcolor,3,10,13,8,4,2,11,15]
 
     sub draw_title() {
+        bombs_total=0
+        bombs_found=0
+        bombs_left=0
         c64.EXTCOL = border_color
         c64.BGCOL0 = board_bgcolor
-        txt.color(7)
+        txt.color(board_fgcolor)
         txt.cls()
         txt.plot(8,4)
         txt.rvs_on()
@@ -114,11 +117,13 @@ game {
     }
 
     sub draw_scoreboard() {
+        txt.color(board_scorecolor)
         txt.plot(board_topx + 1,board_topy - 1)
         txt.print("found: ")
         txt.print_ub(bombs_found)
         txt.print(" left: ")
         txt.print_ub(bombs_left)
+        txt.print("     ")
     }
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty, ubyte bombs) {
@@ -132,7 +137,7 @@ game {
     sub set_bombs() {
         ;tell player bombs are being set
         txt.plot(5,board_topy + row_count + 1)
-        txt.color(5)
+        txt.color(board_scorecolor)
         txt.print("gas pressure is rising...")
         ;place bombs
         bombs_total = bomb_rand()
@@ -174,13 +179,29 @@ game {
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;pick random number between 0 and 5 equates to 4 its a bomb
-                if math.randrange(7) == 4 {
+                if math.randrange(10) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
-                    }
+                } else {
+                    set_value(col_index,row_index,' ')
+                }
             }
         }
         return total
+    }
+
+    sub show_bombs() {
+        ubyte col_index
+        ubyte row_index
+        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+                ubyte isit = is_bomb (col_index,row_index)
+                if isit == 1 {
+                    txt.plot(col_index,row_index)
+                    txt.chrout('*')
+                }
+            }
+        }
     }
 
     sub set_numbtiles() {
@@ -246,7 +267,7 @@ game {
         }
     }
 
-    sub flag(ubyte xf, ubyte yf) {
+    sub flag(ubyte xf, ubyte yf) -> ubyte {
         if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag or
             txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag ^ 128 {
             txt.plot(board_topx+xf, board_topy+yf)
@@ -254,6 +275,8 @@ game {
             txt.rvs_on()
             txt.chrout(board_tile_covered)
             txt.rvs_off()
+            bombs_left++
+            bombs_found--
         }
         else {
             txt.plot(board_topx+xf, board_topy+yf)
@@ -261,9 +284,21 @@ game {
             txt.rvs_on()
             txt.chrout(board_tile_flag)
             txt.rvs_off()
+            bombs_left--
+            bombs_found++
         }
+        draw_scoreboard()
         cursor_on(xf,yf)
+        ubyte complete='n'
+        if bombs_left == 0
+            complete=check_bombs()
+        return complete
     }
+
+    sub check_bombs() -> ubyte {
+        return 'n'
+    }
+
 
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
         if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
@@ -276,7 +311,8 @@ game {
     }
 
 
-    sub draw_playboard(){
+    sub draw_playboard() {
+        txt.color(board_fgcolor)
         txt.plot(board_topx,board_topy)
         txt.chrout(board_upperleft)
         upperlinepart()
@@ -367,6 +403,9 @@ game {
                         row_current--
                         cursor_on(col_current,row_current)
                     }
+                }
+                '*' -> {    ; show bombs
+                    show_bombs()
                 }
                 'f' -> {    ; flag
                     flag(col_current,row_current)
