@@ -83,6 +83,7 @@ game {
     const ubyte board_scorecolor = 5
     const ubyte board_tile_revcolor = 14
     const ubyte board_tile_flagcolor = 2
+    const ubyte board_tile_bombcolor = 2
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
 
@@ -198,6 +199,7 @@ game {
                 ubyte isit = is_bomb (col_index,row_index)
                 if isit == 1 {
                     txt.plot(col_index,row_index)
+                    txt.color(board_tile_bombcolor)
                     txt.chrout('*')
                 }
             }
@@ -268,6 +270,7 @@ game {
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
+        ubyte complete='n'
         if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag or
             txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag ^ 128 {
             txt.plot(board_topx+xf, board_topy+yf)
@@ -279,6 +282,8 @@ game {
             bombs_found--
         }
         else {
+            if bombs_left == 0
+                return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
             txt.rvs_on()
@@ -289,7 +294,6 @@ game {
         }
         draw_scoreboard()
         cursor_on(xf,yf)
-        ubyte complete='n'
         if bombs_left == 0
             complete=check_bombs()
         return complete
@@ -351,6 +355,7 @@ game {
 
     sub play_again() -> ubyte {
         ubyte again = 'x'
+        show_bombs()
         txt.plot(1,board_topy + row_count)
         txt.color(5)
         txt.print("                                     ")
