@@ -146,10 +146,14 @@ game {
         game.draw_scoreboard()
         ;calc numb tiles
         set_numbtiles()
+        draw_menu()
+    }
+
+    sub draw_menu() {
         txt.plot(5,board_topy + row_count + 1)
         txt.print("                          ")
         txt.plot(board_topx,board_topy + row_count)
-        txt.color(5)
+        txt.color(board_scorecolor)
         txt.rvs_on()
         txt.print("wasd")
         txt.rvs_off()
@@ -372,15 +376,19 @@ game {
 
     sub play_again(ubyte reason) -> ubyte {
         ubyte again = 'x'
-        show_bombs()
         txt.plot(1,board_topy + row_count)
         txt.color(5)
         txt.print("                                     ")
         txt.plot(1,board_topy + row_count + 1)
-        if reason == 'l'
-            txt.print("boom! you lose... play again (y/n)?   ")
-        else
-            txt.print("awesome, you won!!! play again (y/n)? ")
+        when reason {
+            'l' -> {
+                txt.print("boom! you lose... play again (y/n)?   ")
+                show_bombs()
+            }
+            'w' -> txt.print("awesome, you won!!! play again (y/n)? ")
+            'n' -> txt.print("        new game (y/n)?               ")
+            'q' -> txt.print("        leave game (y/n)?             ")
+        }
         do {
             again = cbm.GETIN2()
         } until again == 'y' or again == 'n'
@@ -400,8 +408,20 @@ game {
 
             ubyte key = cbm.GETIN2()
             when key {
-                'l' -> return 0     ; quit
-                'n' -> return 1     ;new game
+                'l' -> {     ; quit
+                    again_answer = play_again('q')
+                    if again_answer == 'y'
+                        return 0
+                    else
+                        draw_menu()
+                }
+                'n' -> {
+                    again_answer = play_again('n')
+                    if again_answer == 'y'
+                        return 1
+                    else
+                        draw_menu()
+                }
                 'a', 157 -> {       ; cursor left
                     if col_current > 1 {
                         cursor_off(col_current,row_current)
