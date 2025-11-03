@@ -83,7 +83,7 @@ game {
     const ubyte board_scorecolor = 5
     const ubyte board_tile_revcolor = 14
     const ubyte board_tile_flagcolor = 2
-    const ubyte board_tile_bombcolor = 2
+    const ubyte board_tile_bombcolor = 9
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
 
@@ -180,7 +180,7 @@ game {
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;pick random number between 0 and 5 equates to 4 its a bomb
-                if math.randrange(10) == 4 {
+                if math.randrange(20) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
                 } else {
@@ -300,7 +300,24 @@ game {
     }
 
     sub check_bombs() -> ubyte {
-        return 'n'
+        ubyte col_index
+        ubyte row_index
+        ubyte bomb_matches=0
+        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+                ubyte isit = is_bomb (col_index,row_index)
+                if isit == 1 {
+                    if txt.getchr(col_index, row_index) == board_tile_flag or
+                        txt.getchr(col_index,row_index) == board_tile_flag ^ 128 {
+                        bomb_matches++
+                    }
+                }
+            }
+        }
+        if bomb_matches == bombs_total
+            return 'y'
+        else
+            return 'n'
     }
 
 
@@ -353,14 +370,17 @@ game {
         }
     }
 
-    sub play_again() -> ubyte {
+    sub play_again(ubyte reason) -> ubyte {
         ubyte again = 'x'
         show_bombs()
         txt.plot(1,board_topy + row_count)
         txt.color(5)
         txt.print("                                     ")
         txt.plot(1,board_topy + row_count + 1)
-        txt.print("you lose!!! play again (y/n)?        ")
+        if reason == 'l'
+            txt.print("boom! you lose... play again (y/n)?   ")
+        else
+            txt.print("awesome, you won!!! play again (y/n)? ")
         do {
             again = cbm.GETIN2()
         } until again == 'y' or again == 'n'
@@ -369,6 +389,7 @@ game {
 
 
     sub play() -> ubyte {
+        ubyte again_answer
         col_current=1
         row_current=1
         @(650) = 128
@@ -413,13 +434,20 @@ game {
                     show_bombs()
                 }
                 'f' -> {    ; flag
-                    flag(col_current,row_current)
+                    ubyte complete = flag(col_current,row_current)
+                    if complete == 'y' {
+                        again_answer = play_again('w')
+                        if again_answer == 'y'
+                            return 1
+                        else
+                            return 0
+                    }
                 }
                 ' ' -> {    ; uncover
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
                     if under == 42 or under == 170 {
-                        ubyte again_answer = play_again()
+                        again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
                         else
