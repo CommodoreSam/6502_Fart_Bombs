@@ -82,9 +82,9 @@ game {
     const ubyte board_tile_color = 7
     const ubyte board_scorecolor = 5
     const ubyte board_tile_revcolor = 14
-    const ubyte board_tile_flagcolor = 3
+    const ubyte board_tile_flagcolor = 2
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
-    ubyte[] board_tile_num_color = [board_bgcolor,3,10,13,8,4,2,11,15]
+    ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
 
     sub draw_title() {
         bombs_total=0
