@@ -184,7 +184,7 @@ game {
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;pick random number between 0 and 5 equates to 4 its a bomb
-                if math.randrange(20) == 4 {
+                if math.randrange(10) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
                 } else {
@@ -335,6 +335,25 @@ game {
         return under_char
     }
 
+    sub uncover_around(ubyte xf, ubyte yf) {
+        ubyte junk
+        junk=uncover(xf-1,yf-1)
+        junk=uncover(xf-1,yf)
+        junk=uncover(xf-1,yf+1)
+        junk=uncover(xf,yf-1)
+        junk=uncover(xf,yf+1)
+        junk=uncover(xf+1,yf-1)
+        junk=uncover(xf+1,yf)
+        junk=uncover(xf+1,yf+1)
+        cursor_off(xf-1,yf-1)
+        cursor_off(xf-1,yf)
+        cursor_off(xf-1,yf+1)
+        cursor_off(xf,yf-1)
+        cursor_off(xf,yf+1)
+        cursor_off(xf+1,yf-1)
+        cursor_off(xf+1,yf)
+        cursor_off(xf+1,yf+1)
+    }
 
     sub draw_playboard() {
         txt.color(board_fgcolor)
@@ -466,6 +485,8 @@ game {
                 ' ' -> {    ; uncover
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
+                    if under == 32 or under == 160
+                        uncover_around(col_current,row_current)
                     if under == 42 or under == 170 {
                         again_answer = play_again('l')
                         if again_answer == 'y'
