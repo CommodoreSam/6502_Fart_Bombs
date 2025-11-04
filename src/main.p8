@@ -105,7 +105,7 @@ game {
         txt.plot(8,7)
         txt.print("      @commodoresam     ")
         txt.plot(8,8)
-        txt.print("          2025          ")
+        txt.print("       2025.11.04       ")
         txt.plot(8,9)
         txt.print("                        ")
         sys.wait(150)
@@ -275,8 +275,9 @@ game {
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
         ubyte complete='n'
-        if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag or
-            txt.getchr(board_topx+xf, board_topy+yf) == board_tile_flag ^ 128 {
+        ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
+        if testchr == board_tile_flag or
+            testchr == board_tile_flag ^ 128 {
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
             txt.rvs_on()
@@ -286,7 +287,7 @@ game {
             bombs_found--
         }
         else {
-            if bombs_left == 0
+            if bombs_left ==0 or (testchr!= board_tile_covered and testchr != board_tile_revcovered)
                 return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
