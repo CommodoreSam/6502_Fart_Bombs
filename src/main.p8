@@ -14,7 +14,7 @@ main {
     sub start() {
         do {
             ubyte status=0
-            game.set_boardsize(30,20,5,3,30)
+            game.set_boardsize(30,20,5,3)
             game.draw_title()
             game.draw_scoreboard()
             game.draw_playboard()
@@ -71,7 +71,7 @@ game {
     const ubyte board_lowerline = 99
     const ubyte board_leftline = 98
     const ubyte board_rightline = 98
-    const ubyte board_tile_covered = 186 ;will be in reverse or custom character
+    const ubyte board_tile_covered = 186
     const ubyte board_tile_revcovered = 250
     const ubyte board_tile_flag = 33
     const ubyte board_tile_revflag = 161
@@ -88,6 +88,7 @@ game {
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
 
     sub draw_title() {
+        ;This inits the main game counts at start and play agains
         bombs_total=0
         bombs_found=0
         bombs_left=0
@@ -118,6 +119,7 @@ game {
     }
 
     sub draw_scoreboard() {
+        ;updates score board with each change
         txt.color(board_scorecolor)
         txt.plot(board_topx + 1,board_topy - 1)
         txt.print("found: ")
@@ -127,12 +129,13 @@ game {
         txt.print("     ")
     }
 
-   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty, ubyte bombs) {
+   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
+        ;sets the main board size variables
+        ;board variables always include borders
         col_count = columns
         row_count = rows
         board_topx = startx
         board_topy = starty
-        bombs_total = bombs
     }
 
     sub set_bombs() {
@@ -178,12 +181,16 @@ game {
     }
 
     sub bomb_rand() -> ubyte {
+        ;creates bombs
+        ;iterates through the hidden bomb_array
+        ;and randomly assigns a space or bomb tile
         ubyte total=0
         ubyte col_index
         ubyte row_index
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
-                ;pick random number between 0 and 5 equates to 4 its a bomb
+                ;randomly pick a number in range, when value is 4 it is a bomb.
+                ;increase or decrease bomb count by adjusting range
                 if math.randrange(10) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
@@ -196,6 +203,7 @@ game {
     }
 
     sub show_bombs() {
+        ; shows all bombs at loss
         ubyte col_index
         ubyte row_index
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
@@ -211,6 +219,8 @@ game {
     }
 
     sub set_numbtiles() {
+        ;after bombs and spaces have been applied, this process counts how many bombs are around each tile
+        ;and assigns number to tile
         ubyte num_around=0
         ubyte col_index
         ubyte row_index
@@ -243,6 +253,7 @@ game {
     }
 
     sub is_bomb(ubyte col, ubyte row) -> ubyte {
+        ;checks if a bomb exits in bomb_array at position
         if get_value(col,row) == '*'
             return 1
         else
@@ -250,12 +261,14 @@ game {
     }
 
     sub cursor_on(ubyte xa, ubyte ya) {
+        ;shows the cursor at the specified tile
         if txt.getchr(board_topx+xa,board_topy+ya) == ' '
             txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
         txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
     }
 
     sub cursor_off(ubyte xb, ubyte yb) {
+        ;redraws a tile in right color once cursor leaves or tile is modified by a process
         ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
         when current_char {
             board_tile_covered, board_tile_revcovered -> {
@@ -274,6 +287,10 @@ game {
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
+        ;flags or deflags and updates scoreboard numbers
+        ;flag is only allowed on a covered tile and when bombs left >= 0
+        ;deflag only if a flag
+        ;when at bombs left at 0 check to see if all actually found
         ubyte complete='n'
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
         if testchr == board_tile_flag or
@@ -305,6 +322,7 @@ game {
     }
 
     sub check_bombs() -> ubyte {
+        ;runs when bomb left is at zero and returns Y if all found
         ubyte col_index
         ubyte row_index
         ubyte bomb_matches=0
@@ -327,6 +345,7 @@ game {
 
 
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
+        ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
             txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
             txt.plot(board_topx+xf, board_topy+yf)
@@ -337,6 +356,7 @@ game {
     }
 
     sub uncover_around(ubyte xf, ubyte yf) {
+        ;uncovers tiles round a value (should only run when a space was uncovered previously)
         ubyte junk
         junk=uncover(xf-1,yf-1)
         junk=uncover(xf-1,yf)
@@ -357,6 +377,7 @@ game {
     }
 
     sub draw_playboard() {
+        ;draws the initial board, borders and covered tiles
         txt.color(board_fgcolor)
         txt.plot(board_topx,board_topy)
         txt.chrout(board_upperleft)
@@ -377,24 +398,29 @@ game {
     }
 
     sub upperlinepart() {
-            for x in 1 to col_count - 2 {
-                txt.chrout(board_upperline) ;horizontal line
-            }
+        ;playboard top border
+        for x in 1 to col_count - 2 {
+            txt.chrout(board_upperline) ;horizontal line
         }
+    }
 
     sub lowerlinepart() {
+        ;playboard bottom border
         for x in 1 to col_count - 2 {
             txt.chrout(board_lowerline) ;horizontal line
         }
     }
 
     sub midpart() {
+        ;playboard middle tiles
         for x in 1 to col_count - 2 {
             txt.chrout(board_tile_covered) ;covered character
         }
     }
 
     sub play_again(ubyte reason) -> ubyte {
+        ;anytime a choice to play again happens win, lose, quit/leave
+        ;returns the again answer
         ubyte again = 'x'
         txt.plot(1,board_topy + row_count)
         txt.color(5)
@@ -417,9 +443,13 @@ game {
 
 
     sub play() -> ubyte {
+        ;actual game play code
+        ;constantly waiting on key press and managing user input
+        ;starts with cursor in first tile
         ubyte again_answer
         col_current=1
         row_current=1
+        ;turn repeat key on
         @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
@@ -428,52 +458,52 @@ game {
 
             ubyte key = cbm.GETIN2()
             when key {
-                'l' -> {     ; quit
+                'l' -> {                                ;quit/leave
                     again_answer = play_again('q')
                     if again_answer == 'y'
                         return 0
                     else
                         draw_menu()
                 }
-                'n' -> {
+                'n' -> {                                ;new game
                     again_answer = play_again('n')
                     if again_answer == 'y'
                         return 1
                     else
                         draw_menu()
                 }
-                'a', 157 -> {       ; cursor left
+                'a', 157 -> {                           ;cursor left a or arrow
                     if col_current > 1 {
                         cursor_off(col_current,row_current)
                         col_current--
                         cursor_on(col_current,row_current)
                     }
                 }
-                'd', 29 -> {        ; cursor right
+                'd', 29 -> {                            ;cursor right d or arrow
                     if col_current < (col_count - 2) {
                         cursor_off(col_current,row_current)
                         col_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                's', 17 -> {     ; down
+                's', 17 -> {                            ;down s or arrow
                     if row_current < (row_count - 2) {
                         cursor_off(col_current,row_current)
                         row_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                'w', 145 -> {    ; up
+                'w', 145 -> {                           ;up w or arrow
                     if row_current > 1 {
                         cursor_off(col_current,row_current)
                         row_current--
                         cursor_on(col_current,row_current)
                     }
                 }
-                '*' -> {    ; show bombs
+                '*' -> {                                ;show bombs for testing purposes (not on menu)
                     show_bombs()
                 }
-                'f' -> {    ; flag
+                'f' -> {                                ;flag and if result is all found call play again with win value
                     ubyte complete = flag(col_current,row_current)
                     if complete == 'y' {
                         again_answer = play_again('w')
@@ -483,7 +513,7 @@ game {
                             return 0
                     }
                 }
-                ' ' -> {    ; uncover
+                ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
                     if under == 32 or under == 160
