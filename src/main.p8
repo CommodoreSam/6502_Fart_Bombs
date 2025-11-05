@@ -5,7 +5,6 @@
 %import textio
 %import strings
 %import math
-%import floats
 %import syslib
 %import conv
 %zeropage basicsafe
@@ -357,15 +356,14 @@ game {
 
     sub uncover_around(ubyte xf, ubyte yf) {
         ;uncovers tiles round a value (should only run when a space was uncovered previously)
-        ubyte junk
-        junk=uncover(xf-1,yf-1)
-        junk=uncover(xf-1,yf)
-        junk=uncover(xf-1,yf+1)
-        junk=uncover(xf,yf-1)
-        junk=uncover(xf,yf+1)
-        junk=uncover(xf+1,yf-1)
-        junk=uncover(xf+1,yf)
-        junk=uncover(xf+1,yf+1)
+        void uncover(xf-1,yf-1)
+        void uncover(xf-1,yf)
+        void uncover(xf-1,yf+1)
+        void uncover(xf,yf-1)
+        void uncover(xf,yf+1)
+        void uncover(xf+1,yf-1)
+        void uncover(xf+1,yf)
+        void uncover(xf+1,yf+1)
         cursor_off(xf-1,yf-1)
         cursor_off(xf-1,yf)
         cursor_off(xf-1,yf+1)
@@ -516,9 +514,9 @@ game {
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
-                    if under == 32 or under == 160
+                    if under == 32 or under == 160      ;space or reverse space meaning everything around is not bomb
                         uncover_around(col_current,row_current)
-                    if under == 42 or under == 170 {
+                    if under == 42 or under == 170 {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
