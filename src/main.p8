@@ -425,33 +425,34 @@ game {
 
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
+        ubyte under_char = 0
         if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
             txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
             txt.plot(board_topx+xf, board_topy+yf)
-            ubyte under_char=get_value(board_topx+xf, board_topy+yf)
+            under_char=get_value(board_topx+xf, board_topy+yf)
             txt.chrout(under_char)
         }
         return under_char
     }
 
-    sub uncover_around(ubyte xf, ubyte yf) {
+    sub uncover_around(ubyte xe, ubyte ye) {
         ;uncovers tiles round a value (should only run when a space was uncovered previously)
-        void uncover(xf-1,yf-1)
-        void uncover(xf-1,yf)
-        void uncover(xf-1,yf+1)
-        void uncover(xf,yf-1)
-        void uncover(xf,yf+1)
-        void uncover(xf+1,yf-1)
-        void uncover(xf+1,yf)
-        void uncover(xf+1,yf+1)
-        cursor_off(xf-1,yf-1)
-        cursor_off(xf-1,yf)
-        cursor_off(xf-1,yf+1)
-        cursor_off(xf,yf-1)
-        cursor_off(xf,yf+1)
-        cursor_off(xf+1,yf-1)
-        cursor_off(xf+1,yf)
-        cursor_off(xf+1,yf+1)
+        void uncover(xe-1,ye-1)
+        void uncover(xe-1,ye)
+        void uncover(xe-1,ye+1)
+        void uncover(xe,ye-1)
+        void uncover(xe,ye+1)
+        void uncover(xe+1,ye-1)
+        void uncover(xe+1,ye)
+        void uncover(xe+1,ye+1)
+        cursor_off(xe-1,ye-1)
+        cursor_off(xe-1,ye)
+        cursor_off(xe-1,ye+1)
+        cursor_off(xe,ye-1)
+        cursor_off(xe,ye+1)
+        cursor_off(xe+1,ye-1)
+        cursor_off(xe+1,ye)
+        cursor_off(xe+1,ye+1)
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
