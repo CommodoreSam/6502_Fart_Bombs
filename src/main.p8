@@ -273,6 +273,7 @@ game {
         ubyte total=0
         ubyte col_index
         ubyte row_index
+        math.rndseed(peekw($a1)+1,peekw($d012)+1)
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;randomly pick a number in range, when value is 4 it is a bomb.
