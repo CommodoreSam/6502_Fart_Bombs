@@ -3,8 +3,6 @@ platform {
     ubyte screen_size = 40
 
     sub init() {
-        c64.EXTCOL = game.border_color
-        c64.BGCOL0 = game.board_bgcolor
     }
 
     sub seed() {

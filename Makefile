@@ -39,8 +39,9 @@ EMU=$(EMU_CMD) $(EMU_BASE) $(EMU_KERNAL) $(EMU_DISK) $(EMU_DOS) $(EMU_REU)
 PCC=prog8c
 PCCARGSC64=-srcdirs src:src/c64 -asmlist -target c64 -out build
 PCCARGSX16=-srcdirs src:src/cx16 -asmlist -target cx16 -out build
+PCCARGSP32=-srcdirs src:src/pet32 -asmlist -target pet32 -out build
 
-PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg
+PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg
 
 SRCS	= src/main.p8
 
@@ -57,6 +58,10 @@ build/6502fb-cx16.prg: $(SRCS)
 	$(PCC) $(PCCARGSX16) $<
 	mv build/main.prg build/6502fb-x16.prg
 
+build/6502fb-pet32.prg: $(SRCS)
+	$(PCC) $(PCCARGSP32) $<
+	mv build/main.prg build/6502fb-pet32.prg
+
 clean:
 	$(RM) build$(SEP)*
 
@@ -69,6 +74,10 @@ emu:	all disk
 
 emu-x16:	all
 	x16emu -scale 2 -run -prg build/6502fb-x16.prg
+
+emu-p32:	all
+	xpet -autostartprgmode 1 build/6502fb-pet32.prg
+
 
 #
 # end-of-file
