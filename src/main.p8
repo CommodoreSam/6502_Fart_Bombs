@@ -7,13 +7,15 @@
 %import math
 %import syslib
 %import conv
+%import platform
 %zeropage basicsafe
 
 main {
     sub start() {
+        platform.init()
         do {
             ubyte status=0
-            game.set_boardsize(30,20,5,3)
+            game.set_boardsize(30,19,5,3)
             game.draw_splash()
             game.draw_title()
             game.draw_scoreboard()
@@ -62,17 +64,15 @@ game {
     ubyte[40] row20
     ubyte[40] row21
     ubyte[40] row22
-    ubyte[40] row23
-    ubyte[40] row24
-    uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22, row23, row24]
+    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
     const ubyte board_lowerright = 189
-    const ubyte board_upperline = 99
-    const ubyte board_lowerline = 99
-    const ubyte board_leftline = 98
-    const ubyte board_rightline = 98
+    const ubyte board_upperline = 192
+    const ubyte board_lowerline = 192
+    const ubyte board_leftline = 221
+    const ubyte board_rightline = 221
     const ubyte board_tile_covered = 186
     const ubyte board_tile_revcovered = 250
     const ubyte board_tile_flag = 33
@@ -100,8 +100,6 @@ game {
 
     sub draw_splash() {
         ubyte exit_title = 'n'
-        c64.EXTCOL = border_color
-        c64.BGCOL0 = board_bgcolor
         txt.color(board_fgcolor)
         txt.cls()
         txt.rvs_on()
@@ -273,7 +271,7 @@ game {
         ubyte total=0
         ubyte col_index
         ubyte row_index
-        math.rndseed(peekw($a1)+1,peekw($d012)+1)
+        platform.seed()
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;randomly pick a number in range, when value is 4 it is a bomb.
@@ -310,21 +308,22 @@ game {
     sub draw_menu() {
         txt.plot(5,board_topy + row_count + 1)
         txt.print("                          ")
-        txt.plot(board_topx,board_topy + row_count)
+        txt.plot(board_topx+1,board_topy + row_count)
         txt.color(board_scorecolor)
         txt.rvs_on()
         txt.print("wasd")
         txt.rvs_off()
-        txt.print("=move ")
+        txt.print("=move    ")
         txt.rvs_on()
         txt.print("f")
         txt.rvs_off()
         txt.print("=flag ")
+        txt.plot(board_topx+5,board_topy + row_count+1)
         txt.rvs_on()
         txt.print("space")
         txt.rvs_off()
         txt.print("=uncover ")
-        txt.plot(board_topx,board_topy + row_count+1)
+        txt.plot(board_topx+1,board_topy + row_count+2)
         txt.rvs_on()
         txt.print("l")
         txt.rvs_off()

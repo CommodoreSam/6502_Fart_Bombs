@@ -19,7 +19,7 @@ endif
 
 # disk image settings
 DISKTYPE=d64
-DISKNAME=samtest
+DISKNAME=6502fb
 DISK=build/$(DISKNAME).$(DISKTYPE)
 
 # Emulator settings
@@ -37,9 +37,11 @@ EMU_REU=-reu -reusize $(EMU_REUSIZE)
 EMU=$(EMU_CMD) $(EMU_BASE) $(EMU_KERNAL) $(EMU_DISK) $(EMU_DOS) $(EMU_REU)
 
 PCC=prog8c
-PCCARGSC64=-srcdirs src -asmlist -target c64 -out build
+PCCARGSC64=-srcdirs src:src/c64 -asmlist -target c64 -out build
+PCCARGSX16=-srcdirs src:src/cx16 -asmlist -target cx16 -out build
 
-PROGS	= build/main.prg
+PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg
+
 SRCS	= src/main.p8
 
 all: build $(PROGS)
@@ -47,18 +49,26 @@ all: build $(PROGS)
 build:
 	$(MD) build
 
-build/main.prg: $(SRCS)
+build/6502fb-c64.prg: $(SRCS)
 	$(PCC) $(PCCARGSC64) $<
+	mv build/main.prg build/6502fb-c64.prg
+
+build/6502fb-cx16.prg: $(SRCS)
+	$(PCC) $(PCCARGSX16) $<
+	mv build/main.prg build/6502fb-x16.prg
 
 clean:
 	$(RM) build$(SEP)*
 
 disk:
 	c1541 -format $(DISKNAME),52 $(DISKTYPE) $(DISK)
-	c1541 -attach $(DISK) -write build/main.prg samtest,p
+	c1541 -attach $(DISK) -write build/6502fb-c64.prg 6502fb,p
 
 emu:	all disk
-	$(EMU) -autostartprgmode 1 build/main.prg
+	$(EMU) -autostartprgmode 1 build/6502fb-c64.prg
+
+emu-x16:	all
+	x16emu -scale 2 -run -prg build/6502fb-x16.prg
 
 #
 # end-of-file
