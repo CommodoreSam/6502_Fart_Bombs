@@ -73,10 +73,9 @@ game {
     const ubyte board_lowerline = 192
     const ubyte board_leftline = 221
     const ubyte board_rightline = 221
-    const ubyte board_tile_covered = 186
-    const ubyte board_tile_revcovered = 250
+    const ubyte board_tile_covered = 250
+    const ubyte board_tile_revcovered = 186
     const ubyte board_tile_flag = 33
-    const ubyte board_tile_revflag = 161
     const ubyte board_tile_bomb = 42
     const ubyte border_color = 6
     const ubyte board_bgcolor = 0
@@ -88,6 +87,10 @@ game {
     const ubyte board_tile_bombcolor = 9
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
+    ubyte current_char
+    ubyte cursor_char = 102
+    ubyte blink_timer = 0
+    ubyte blink_state = 0
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -248,7 +251,7 @@ game {
     sub midpart() {
         ;playboard middle tiles
         for x in 1 to col_count - 2 {
-            txt.chrout(board_tile_covered) ;covered character
+            txt.chrout(board_tile_revcovered) ;covered character
         }
     }
 
@@ -345,6 +348,12 @@ game {
         @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
+            blink_timer++
+            if blink_timer >= 60 {
+                game.blink_char(col_current,row_current)
+                blink_timer = 0
+                continue
+            }
             if cbm.STOP2()
                 return 0
 
@@ -408,9 +417,9 @@ game {
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
-                    if under == 32 or under == 160      ;space or reverse space meaning everything around is not bomb
+                    if under == 32      ;space or reverse space meaning everything around is not bomb
                         uncover_around(col_current,row_current)
-                    if under == 42 or under == 170 {    ;you hit a bomb dummy
+                    if under == 42 {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
@@ -426,11 +435,11 @@ game {
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
-        if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
-            txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
-            txt.plot(board_topx+xf, board_topy+yf)
-            under_char=get_value(board_topx+xf, board_topy+yf)
-            txt.chrout(under_char)
+        if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
+            txt.getchr(board_topx+xf, board_topy+yf) == cursor_char {
+            under_char = get_value(board_topx+xf, board_topy+yf)
+            txt.setchr(board_topx+xf, board_topy+yf, under_char)
+            cursor_off(xf,yf)
         }
         return under_char
     }
@@ -445,14 +454,14 @@ game {
         void uncover(xe+1,ye-1)
         void uncover(xe+1,ye)
         void uncover(xe+1,ye+1)
-        cursor_off(xe-1,ye-1)
-        cursor_off(xe-1,ye)
-        cursor_off(xe-1,ye+1)
-        cursor_off(xe,ye-1)
-        cursor_off(xe,ye+1)
-        cursor_off(xe+1,ye-1)
-        cursor_off(xe+1,ye)
-        cursor_off(xe+1,ye+1)
+;        cursor_off(xe-1,ye-1)
+;        cursor_off(xe-1,ye)
+;        cursor_off(xe-1,ye+1)
+;        cursor_off(xe,ye-1)
+;        cursor_off(xe,ye+1)
+;        cursor_off(xe+1,ye-1)
+;        cursor_off(xe+1,ye)
+;        cursor_off(xe+1,ye+1)
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
@@ -473,7 +482,7 @@ game {
             bombs_found--
         }
         else {
-            if bombs_left ==0 or (testchr!= board_tile_covered and testchr != board_tile_revcovered)
+            if bombs_left ==0 or (testchr!= board_tile_covered and testchr != board_tile_covered ^ 128)
                 return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
@@ -553,26 +562,30 @@ game {
 
     sub cursor_on(ubyte xa, ubyte ya) {
         ;shows the cursor at the specified tile
-        if txt.getchr(board_topx+xa,board_topy+ya) == ' '
-            txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
-        txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
+        if txt.getchr(board_topx+xa,board_topy+ya) != cursor_char
+            current_char = txt.getchr(board_topx+xa,board_topy+ya)
+    }
+
+    sub blink_char(ubyte xz, ubyte yz) {
+        if txt.getchr(board_topx+xz,board_topy+yz) != cursor_char
+            txt.setchr(board_topx+xz,board_topy+yz,cursor_char)
+        else
+            txt.setchr(board_topx+xz,board_topy+yz,current_char)
     }
 
     sub cursor_off(ubyte xb, ubyte yb) {
         ;redraws a tile in right color once cursor leaves or tile is modified by a process
-        ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
-        when current_char {
-            board_tile_covered, board_tile_revcovered -> {
+        if txt.getchr(board_topx+xb,board_topy+yb) == cursor_char
+            txt.setchr(board_topx+xb,board_topy+yb,current_char)
+        when txt.getchr(board_topx+xb,board_topy+yb) {
+            board_tile_covered, ' ' -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_color)
             }
-            board_tile_flag, board_tile_revflag -> {
+            board_tile_flag -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
             }
             '1','2','3','4','5','6','7','8' -> {
-                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[current_char-48])
-            }
-            ' ', 160 -> {
-                txt.setchr(board_topx+xb,board_topy+yb,' ')
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[txt.getchr(board_topx+xb,board_topy+yb)-48])
             }
         }
     }
