@@ -111,7 +111,7 @@ game {
         txt.plot(8,2)
         txt.print("                        ")
         txt.plot(8,3)
-        txt.print("    6502 fart bombs     ")
+        txt.print("    6502 fart b*mbs!    ")
         txt.plot(8,4)
         txt.print("                        ")
         txt.plot(8,5)
@@ -120,22 +120,24 @@ game {
         txt.plot(8,7)
         txt.print("    by @commodoresam")
         txt.plot(8,8)
-        txt.print("   v1.0  (2025.11.12)")
+        txt.print("    & andrew gillham")
+        txt.plot(8,10)
+        txt.print("     v1.2025.11.19")
         txt.rvs_on()
-        txt.plot(1,11)
+        txt.plot(1,12)
         txt.print(" object ")
         txt.rvs_off()
-        txt.plot(1,12)
+        txt.plot(1,13)
         txt.color(board_scorecolor)
         txt.print("place a flag over every fart bomb")
-        txt.plot(1,13)
+        txt.plot(1,14)
         txt.print("without blowing yourself up.")
         txt.rvs_on()
         txt.color(board_fgcolor)
         txt.plot(1,15)
         txt.print(" game play ")
         txt.rvs_off()
-        txt.plot(1,16)
+        txt.plot(1,17)
         txt.color(board_scorecolor)
         txt.print("* move around using ")
         txt.rvs_on()
@@ -148,7 +150,7 @@ game {
         txt.color(board_fgcolor)
         txt.print("arrow keys")
         txt.rvs_off()
-        txt.plot(1,17)
+        txt.plot(1,18)
         txt.color(board_scorecolor)
         txt.print("* press ")
         txt.rvs_on()
@@ -157,12 +159,12 @@ game {
         txt.rvs_off()
         txt.color(board_scorecolor)
         txt.print(" to uncover a tile")
-        txt.plot(1,18)
-        txt.print("* when you uncover a number, that's")
         txt.plot(1,19)
+        txt.print("* when you uncover a number, that's")
+        txt.plot(1,20)
         txt.print("  how many farts adjacent to it")
         txt.rvs_off()
-        txt.plot(1,20)
+        txt.plot(1,21)
         txt.print("* use ")
         txt.rvs_on()
         txt.color(board_fgcolor)
@@ -176,7 +178,7 @@ game {
         txt.rvs_off()
         txt.color(board_scorecolor)
         txt.print(" flag over the fart bomb")
-        txt.plot(1,21)
+        txt.plot(1,22)
         txt.print("* uncover a fart bomb ")
         txt.color(board_tile_bombcolor)
         txt.print("*")
@@ -348,12 +350,10 @@ game {
         @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
-            blink_timer++
-            if blink_timer >= 60 {
+            if platform.blink_timer() {
                 game.blink_char(col_current,row_current)
-                blink_timer = 0
                 continue
-            }
+        }
             if cbm.STOP2()
                 return 0
 

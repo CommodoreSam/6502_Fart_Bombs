@@ -8,7 +8,18 @@ platform {
     }
 
     sub seed() {
-        math.rndseed(peekw($a1)+1,peekw(cx16.VERA_SCANLINE_L)+1)
+        ubyte temp1,temp2,temp3 = cx16.entropy_get()
+        math.rndseed(mkword(temp1,temp2),temp3 as uword)
+    }
+
+    bool last_timer = false
+    sub blink_timer() -> bool {
+        bool temp = ((cbm.RDTIM16() as ubyte & %00100000) == 0) as bool
+        if temp != last_timer {
+            last_timer = temp
+            return true
+        }
+        return false
     }
 
 }

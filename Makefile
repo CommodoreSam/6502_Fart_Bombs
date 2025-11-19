@@ -50,15 +50,15 @@ all: build $(PROGS)
 build:
 	$(MD) build
 
-build/6502fb-c64.prg: $(SRCS)
+build/6502fb-c64.prg: $(SRCS) src/c64/platform.p8
 	$(PCC) $(PCCARGSC64) $<
 	mv build/main.prg build/6502fb-c64.prg
 
-build/6502fb-cx16.prg: $(SRCS)
+build/6502fb-cx16.prg: $(SRCS) src/cx16/platform.p8
 	$(PCC) $(PCCARGSX16) $<
 	mv build/main.prg build/6502fb-x16.prg
 
-build/6502fb-pet32.prg: $(SRCS)
+build/6502fb-pet32.prg: $(SRCS) src/pet32/platform.p8
 	$(PCC) $(PCCARGSP32) $<
 	mv build/main.prg build/6502fb-pet32.prg
 
