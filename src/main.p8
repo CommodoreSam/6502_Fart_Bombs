@@ -89,8 +89,8 @@ game {
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
     ubyte current_char
     ubyte cursor_char = 102
-    ubyte blink_timer = 0
-    ubyte blink_state = 0
+;    ubyte blink_timer = 0
+;    ubyte blink_state = 0
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -352,7 +352,6 @@ game {
         repeat {
             if platform.blink_timer() {
                 game.blink_char(col_current,row_current)
-                continue
         }
             if cbm.STOP2()
                 return 0
@@ -454,14 +453,7 @@ game {
         void uncover(xe+1,ye-1)
         void uncover(xe+1,ye)
         void uncover(xe+1,ye+1)
-;        cursor_off(xe-1,ye-1)
-;        cursor_off(xe-1,ye)
-;        cursor_off(xe-1,ye+1)
-;        cursor_off(xe,ye-1)
-;        cursor_off(xe,ye+1)
-;        cursor_off(xe+1,ye-1)
-;        cursor_off(xe+1,ye)
-;        cursor_off(xe+1,ye+1)
+
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
@@ -470,9 +462,10 @@ game {
         ;deflag only if a flag
         ;when at bombs left at 0 check to see if all actually found
         ubyte complete='n'
+        if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
+            txt.setchr(board_topx+xf,board_topy+yf,current_char)
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
-        if testchr == board_tile_flag or
-            testchr == board_tile_flag ^ 128 {
+        if testchr == board_tile_flag ^ 128 {
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
             txt.rvs_on()
@@ -482,7 +475,7 @@ game {
             bombs_found--
         }
         else {
-            if bombs_left ==0 or (testchr!= board_tile_covered and testchr != board_tile_covered ^ 128)
+            if bombs_left ==0 or testchr!= board_tile_covered
                 return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
@@ -608,6 +601,8 @@ game {
             'n' -> txt.print("        new game (y/n)?               ")
             'q' -> txt.print("        leave game (y/n)?             ")
         }
+        txt.plot(1,board_topy + row_count + 2)
+        txt.print("                                     ")
         do {
             again = cbm.GETIN2()
         } until again == 'y' or again == 'n'
