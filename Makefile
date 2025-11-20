@@ -56,7 +56,7 @@ build/6502fb-c64.prg: $(SRCS) src/c64/platform.p8
 
 build/6502fb-cx16.prg: $(SRCS) src/cx16/platform.p8
 	$(PCC) $(PCCARGSX16) $<
-	mv build/main.prg build/6502fb-x16.prg
+	mv build/main.prg build/6502fb-cx16.prg
 
 build/6502fb-pet32.prg: $(SRCS) src/pet32/platform.p8
 	$(PCC) $(PCCARGSP32) $<
@@ -73,10 +73,10 @@ emu:	all disk
 	$(EMU) -autostartprgmode 1 build/6502fb-c64.prg
 
 emu-x16:	all
-	x16emu -scale 2 -run -prg build/6502fb-x16.prg
+	x16emu -scale 2 -run -prg build/6502fb-cx16.prg
 
 emu-p32:	all
-	xpet -autostartprgmode 1 build/6502fb-pet32.prg
+	xpet -model 4032 -autostartprgmode 1 build/6502fb-pet32.prg
 
 
 #

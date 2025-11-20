@@ -88,9 +88,7 @@ game {
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
     ubyte current_char
-    ubyte cursor_char = 102
-;    ubyte blink_timer = 0
-;    ubyte blink_state = 0
+    ubyte cursor_char = sc:'x'
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -102,90 +100,87 @@ game {
     }
 
     sub draw_splash() {
+        ubyte menu_offset = platform.screen_width / 2 - 9
         ubyte exit_title = 'n'
         txt.color(board_fgcolor)
         txt.cls()
         txt.rvs_on()
-        txt.plot(8,1)
-        txt.print("                        ")
-        txt.plot(8,2)
-        txt.print("                        ")
-        txt.plot(8,3)
-        txt.print("    6502 fart b*mbs!    ")
-        txt.plot(8,4)
-        txt.print("                        ")
-        txt.plot(8,5)
-        txt.print("                        ")
+        txt.plot(menu_offset,0)
+        ;          12345678901234567890
+        txt.print("                  ")
+        txt.plot(menu_offset,1)
+        txt.print(" 6502 fart b*mbs! ")
+        txt.plot(menu_offset,2)
+        txt.print("                  ")
         txt.rvs_off()
-        txt.plot(8,7)
-        txt.print("    by @commodoresam")
-        txt.plot(8,8)
-        txt.print("    & andrew gillham")
-        txt.plot(8,10)
-        txt.print("     v1.2025.11.19")
+        txt.plot(menu_offset,4)
+        txt.print(" by @commodoresam")
+        txt.plot(menu_offset,5)
+        txt.print(" & andrew gillham")
+        txt.plot(menu_offset,6)
+        txt.print("  v1.2025.11.20")
         txt.rvs_on()
-        txt.plot(1,12)
+        txt.plot(menu_offset,8)
         txt.print(" object ")
         txt.rvs_off()
-        txt.plot(1,13)
+        txt.plot(menu_offset,9)
         txt.color(board_scorecolor)
-        txt.print("place a flag over every fart bomb")
-        txt.plot(1,14)
-        txt.print("without blowing yourself up.")
+        ;          12345678901234567890
+        txt.print("-clear tiles.")
+        txt.plot(menu_offset,10)
+        txt.print("-flag bomb tiles.")
+        txt.plot(menu_offset,11)
+        txt.print("-number tiles")
+         txt.plot(menu_offset,12)
+        txt.print(" show bombs next")
+         txt.plot(menu_offset,13)
+        txt.print(" to that tile.")
+        txt.plot(menu_offset,14)
+        txt.print("-don't hit a b*mb!")
         txt.rvs_on()
         txt.color(board_fgcolor)
-        txt.plot(1,15)
-        txt.print(" game play ")
+        txt.plot(menu_offset,16)
+        txt.print(" keyboard control ")
         txt.rvs_off()
-        txt.plot(1,17)
+        txt.plot(menu_offset,17)
         txt.color(board_scorecolor)
-        txt.print("* move around using ")
+        txt.print("move:")
+        txt.plot(menu_offset+2,18)
         txt.rvs_on()
         txt.color(board_fgcolor)
         txt.print("wasd")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" or ")
+        txt.print(" / ")
         txt.rvs_on()
         txt.color(board_fgcolor)
-        txt.print("arrow keys")
+        txt.print("arrows")
         txt.rvs_off()
-        txt.plot(1,18)
+        txt.plot(menu_offset,19)
         txt.color(board_scorecolor)
-        txt.print("* press ")
+        txt.print("uncover:")
         txt.rvs_on()
         txt.color(board_fgcolor)
+        txt.plot(menu_offset+2,20)
         txt.print("space")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" to uncover a tile")
-        txt.plot(1,19)
-        txt.print("* when you uncover a number, that's")
-        txt.plot(1,20)
-        txt.print("  how many farts adjacent to it")
-        txt.rvs_off()
-        txt.plot(1,21)
-        txt.print("* use ")
+        txt.plot(menu_offset,21)
+        txt.print("flag:")
+        txt.plot(menu_offset+2,22)
         txt.rvs_on()
         txt.color(board_fgcolor)
         txt.print("f")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" to place a ")
+        txt.print(" marks flag ")
         txt.rvs_on()
         txt.color(board_tile_flagcolor)
         txt.print("!")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" flag over the fart bomb")
-        txt.plot(1,22)
-        txt.print("* uncover a fart bomb ")
-        txt.color(board_tile_bombcolor)
-        txt.print("*")
-        txt.color(board_scorecolor)
-        txt.print(" and you die!")
-        txt.plot(1,24)
-        txt.print("press space to continue...")
+        txt.plot(menu_offset,24)
+        txt.print(">> press space <<")
         do {
             exit_title = cbm.GETIN2()
         } until exit_title == ' '
@@ -200,7 +195,7 @@ game {
         txt.color(board_fgcolor)
         txt.plot(board_topx+(col_count / 2 -9),0)
         txt.rvs_on()
-        txt.print(" 6502 fart bombs ")
+        txt.print(" 6502 fart b*mbs! ")
         txt.rvs_off()
     }
 
@@ -212,7 +207,7 @@ game {
         txt.print_ub(bombs_found)
         txt.print(" left: ")
         txt.print_ub(bombs_left)
-        txt.print("     ")
+        txt.print("    ")
     }
 
     sub draw_playboard() {
@@ -555,8 +550,10 @@ game {
 
     sub cursor_on(ubyte xa, ubyte ya) {
         ;shows the cursor at the specified tile
-        if txt.getchr(board_topx+xa,board_topy+ya) != cursor_char
+        if txt.getchr(board_topx+xa,board_topy+ya) != cursor_char {
             current_char = txt.getchr(board_topx+xa,board_topy+ya)
+            txt.setchr(board_topx+xa,board_topy+ya,cursor_char)
+        }
     }
 
     sub blink_char(ubyte xz, ubyte yz) {

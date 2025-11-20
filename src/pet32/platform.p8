@@ -1,6 +1,7 @@
 platform {
 
-    ubyte screen_size = 40
+    ubyte screen_width = 40
+    ubyte screen_heigth = 25
 
     sub init() {
     }
@@ -16,6 +17,6 @@ platform {
     }
 
     sub seed() {
-        math.rndseed(peekw($a1)+1,peekw($d012)+1)
+        math.rndseed(mkword(cbm.TIME_MID, cbm.TIME_LO),peekw($e844))
     }
 }

@@ -1,6 +1,7 @@
 platform {
 
-    ubyte screen_size = 40
+    ubyte screen_width = 40
+    ubyte screen_heigth = 25
 
     sub init() {
         c64.EXTCOL = game.border_color
