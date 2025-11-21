@@ -26,3 +26,28 @@ platform {
         math.rndseed(peekw($a1)+1,peekw($d012)+1)
     }
 }
+
+cbm {
+%option merge
+
+    ; C64 colors
+    const ubyte COLOR_BLACK = 0
+    const ubyte COLOR_WHITE = 1
+    const ubyte COLOR_RED = 2
+    const ubyte COLOR_CYAN = 3
+    const ubyte COLOR_PURPLE = 4
+    const ubyte COLOR_GREEN = 5
+    const ubyte COLOR_BLUE = 6
+    const ubyte COLOR_YELLOW = 7
+    const ubyte COLOR_ORANGE = 8
+    const ubyte COLOR_BROWN = 9
+    const ubyte COLOR_PINK = 10
+    const ubyte COLOR_DARK_GRAY = 11
+    const ubyte COLOR_DARK_GREY = 11
+    const ubyte COLOR_GRAY = 12
+    const ubyte COLOR_GREY = 12
+    const ubyte COLOR_LIGHT_GREEN = 13
+    const ubyte COLOR_LIGHT_BLUE = 14
+    const ubyte COLOR_LIGHT_GRAY = 15
+    const ubyte COLOR_LIGHT_GREY = 15
+}

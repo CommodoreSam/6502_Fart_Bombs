@@ -79,18 +79,19 @@ game {
     const ubyte board_tile_revcovered = 186
     const ubyte board_tile_flag = 33
     const ubyte board_tile_bomb = 42
-    const ubyte border_color = 6
-    const ubyte board_bgcolor = 0
-    const ubyte board_fgcolor = 7
-    const ubyte board_tile_color = 7
-    const ubyte board_scorecolor = 5
-    const ubyte board_tile_revcolor = 14
-    const ubyte board_tile_flagcolor = 2
-    const ubyte board_tile_bombcolor = 9
+    const ubyte border_color = cbm.COLOR_BLUE
+    const ubyte board_bgcolor = cbm.COLOR_BLACK
+    const ubyte board_fgcolor = cbm.COLOR_YELLOW
+    const ubyte board_tile_color = cbm.COLOR_YELLOW
+    const ubyte board_scorecolor = cbm.COLOR_GREEN
+    ;const ubyte board_tile_revcolor = 14
+    const ubyte board_tile_flagcolor = cbm.COLOR_RED
+    const ubyte board_tile_bombcolor = cbm.COLOR_RED
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
     ubyte current_char
     ubyte cursor_char = sc:'x'
+    ubyte menu_offset = platform.screen_width / 2 - 10
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -102,7 +103,7 @@ game {
     }
 
     sub draw_splash() {
-        ubyte menu_offset = platform.screen_width / 2 - 10
+
         ubyte exit_title = 'n'
         txt.color(board_fgcolor)
         txt.cls()
@@ -193,9 +194,9 @@ game {
         bombs_left=0
         txt.cls()
         txt.color(board_fgcolor)
-        txt.plot(board_topx+(col_count / 2 -9),0)
+        txt.plot(menu_offset,0)
         txt.rvs_on()
-        txt.print(" 6502 fart b*mbs! ")
+        txt.print(" 6502 fart b*mbs!! ")
         txt.rvs_off()
     }
 
@@ -254,14 +255,13 @@ game {
 
     sub set_bombs() {
         ;tell player bombs are being set
-        txt.plot(5,board_topy + row_count + 1)
+        txt.plot(menu_offset,board_topy + row_count + 1)
         txt.color(board_scorecolor)
-        txt.print("gas pressure is rising...")
+        txt.print("fart b*mbs loading...")
         ;place bombs
         bombs_total = bomb_rand()
         bombs_left=bombs_total
         game.draw_scoreboard()
-        ;calc numb tiles
     }
 
     sub bomb_rand() -> ubyte {
@@ -306,9 +306,9 @@ game {
     }
 
     sub draw_menu() {
-        txt.plot(5,board_topy + row_count + 1)
+        txt.plot(menu_offset,board_topy + row_count + 1)
         txt.print("                          ")
-        txt.plot(board_topx+1,board_topy + row_count)
+        txt.plot(menu_offset,board_topy + row_count)
         txt.color(board_scorecolor)
         txt.rvs_on()
         txt.print("wasd")
@@ -318,16 +318,16 @@ game {
         txt.print("f")
         txt.rvs_off()
         txt.print("=flag ")
-        txt.plot(board_topx+5,board_topy + row_count+1)
+        txt.plot(menu_offset+5,board_topy + row_count+1)
         txt.rvs_on()
         txt.print("space")
         txt.rvs_off()
         txt.print("=uncover ")
-        txt.plot(board_topx+1,board_topy + row_count+2)
+        txt.plot(menu_offset,board_topy + row_count+2)
         txt.rvs_on()
         txt.print("l")
         txt.rvs_off()
-        txt.print("=leave          ")
+        txt.print("=leave  ")
         txt.rvs_on()
         txt.print("n")
         txt.rvs_off()
@@ -587,21 +587,36 @@ game {
         ;anytime a choice to play again happens win, lose, quit/leave
         ;returns the again answer
         ubyte again = 'x'
-        txt.plot(1,board_topy + row_count)
-        txt.color(5)
-        txt.print("                                     ")
-        txt.plot(1,board_topy + row_count + 1)
+        txt.color(board_scorecolor)
+        txt.plot(menu_offset,board_topy + row_count)
+        txt.print("                    ")
+        txt.plot(menu_offset,board_topy + row_count+1)
+        txt.print("                    ")
+        txt.plot(menu_offset,board_topy + row_count+2)
+        txt.print("                    ")
         when reason {
             'l' -> {
-                txt.print("boom! you lose... play again (y/n)?   ")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("boom! you lose...")
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("play again (y/n)?")
                 show_bombs()
             }
-            'w' -> txt.print("awesome, you won!!! play again (y/n)? ")
-            'n' -> txt.print("        new game (y/n)?               ")
-            'q' -> txt.print("        leave game (y/n)?             ")
+            'w' -> {
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("awesome, you won!!!")
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("play again (y/n)?")
+            }
+            'q' -> {
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("leave game (y/n)?")
+            }
+            'n' -> {
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("new game (y/n)?")
+            }
         }
-        txt.plot(1,board_topy + row_count + 2)
-        txt.print("                                     ")
         do {
             again = cbm.GETIN2()
         } until again == 'y' or again == 'n'
