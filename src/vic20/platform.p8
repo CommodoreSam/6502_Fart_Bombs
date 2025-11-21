@@ -7,9 +7,9 @@ platform {
 
     ; not used right now.
     ;const ubyte SCREEN_SIZE = txt.DEFAULT_WIDTH
-    ubyte grid_width = 20
+    ubyte grid_width = 22
     ubyte grid_height = 16
-    ubyte grid_startx = 1
+    ubyte grid_startx = 0
     ubyte grid_starty = 3
 
     sub init() {

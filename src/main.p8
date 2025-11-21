@@ -15,7 +15,8 @@ main {
         platform.init()
         do {
             ubyte status=0
-            game.set_boardsize(platform.grid_width,platform.grid_height,platform.grid_startx,platform.grid_starty)
+            game.set_boardsize(platform.grid_width, platform.grid_height,
+                                platform.grid_startx, platform.grid_starty)
             game.draw_splash()
             game.draw_title()
             game.draw_scoreboard()
@@ -64,7 +65,8 @@ game {
     ubyte[40] row20
     ubyte[40] row21
     ubyte[40] row22
-    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
+    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
+                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
@@ -177,8 +179,8 @@ game {
         txt.print("!")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.plot(menu_offset,23)
-        txt.print(">> press space <<")
+        txt.plot(menu_offset,22)
+        txt.print(" >> press space <<")
         do {
             exit_title = cbm.GETIN2()
         } until exit_title == ' '
@@ -427,8 +429,10 @@ game {
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
-        if txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
-            txt.getchr(board_topx+xf, board_topy+yf) == cursor_char {
+        ubyte temp_char = txt.getchr(board_topx+xf, board_topy+yf)
+        if temp_char == board_tile_covered or
+            temp_char == cursor_char or
+            temp_char == ' ' {
             under_char = get_value(board_topx+xf, board_topy+yf)
             txt.setchr(board_topx+xf, board_topy+yf, under_char)
             cursor_off(xf,yf)
