@@ -1,9 +1,13 @@
 platform {
 
     ubyte screen_width = 40
-    ubyte screen_heigth = 25
+    ubyte screen_height = 25
+    ubyte grid_width = 30
+    ubyte grid_height = 19
+    ubyte grid_startx = 5
+    ubyte grid_starty = 3
 
-    sub init() {
+   sub init() {
     }
 
     bool last_timer = false

@@ -1,7 +1,11 @@
 platform {
 
     ubyte screen_width = 40
-    ubyte screen_heigth = 30
+    ubyte screen_height = 30
+    ubyte grid_width = 30
+    ubyte grid_height = 19
+    ubyte grid_startx = 5
+    ubyte grid_starty = 3
 
     sub init() {
         cx16.set_screen_mode(3) ;screen 40x30 no border

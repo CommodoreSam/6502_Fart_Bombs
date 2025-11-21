@@ -41,8 +41,9 @@ PCCARGSC64=-srcdirs src:src/c64 -asmlist -target c64 -out build
 PCCARGSX16=-srcdirs src:src/cx16 -asmlist -target cx16 -out build
 PCCARGSP32=-srcdirs src:src/pet32 -asmlist -target pet32 -out build
 PCCARGS128=-srcdirs src:src/c128 -asmlist -target c128 -out build
+PCCARGSVIC=-srcdirs src:src/vic20 -asmlist -target config/vic20plus3.properties -out build
 
-PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg
+PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg
 
 SRCS	= src/main.p8
 
@@ -67,6 +68,10 @@ build/6502fb-c128.prg: $(SRCS) src/c128/platform.p8
 	$(PCC) $(PCCARGS128) $<
 	mv build/main.prg build/6502fb-c128.prg
 
+build/6502fb-vic20.prg: $(SRCS) src/vic20/platform.p8
+	$(PCC) $(PCCARGSVIC) $<
+	mv build/main.prg build/6502fb-vic20.prg
+
 clean:
 	$(RM) build$(SEP)*
 
@@ -85,6 +90,9 @@ emu-p32:	all
 
 emu-c128:	all
 	x128 -autostartprgmode 1 build/6502fb-c128.prg
+
+emu-vic20:	all
+	xvic -memory 3k -autostartprgmode 1 build/6502fb-vic20.prg
 
 
 #
