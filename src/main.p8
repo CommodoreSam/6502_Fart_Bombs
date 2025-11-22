@@ -208,7 +208,7 @@ game {
         txt.print_ub(bombs_found)
         txt.print(" left: ")
         txt.print_ub(bombs_left)
-        txt.print("    ")
+        txt.print("  ")
     }
 
     sub draw_playboard() {
@@ -472,7 +472,7 @@ game {
             bombs_found--
         }
         else {
-            if bombs_left ==0 or testchr!= board_tile_covered
+            if bombs_left == 0 or testchr!= board_tile_covered
                 return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
@@ -483,9 +483,9 @@ game {
             bombs_found++
         }
         draw_scoreboard()
-        cursor_on(xf,yf)
         if bombs_left == 0
             complete=check_bombs()
+        cursor_on(xf,yf) ;must be after the check or cursor may get reintroduced
         return complete
     }
 
@@ -496,10 +496,9 @@ game {
         ubyte bomb_matches=0
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
-                ubyte isit = is_bomb (col_index,row_index)
+                ubyte isit = is_bomb(col_index,row_index)
                 if isit == 1 {
-                    if txt.getchr(col_index, row_index) == board_tile_flag or
-                        txt.getchr(col_index,row_index) == board_tile_flag ^ 128 {
+                    if txt.getchr(col_index, row_index) == board_tile_flag ^ 128 {
                         bomb_matches++
                     }
                 }
@@ -521,7 +520,7 @@ game {
                 if isit == 1 {
                     txt.plot(col_index,row_index)
                     txt.color(board_tile_bombcolor)
-                    txt.chrout('*')
+                    txt.chrout(board_tile_bomb)
                 }
             }
         }
@@ -544,7 +543,7 @@ game {
 
     sub is_bomb(ubyte col, ubyte row) -> ubyte {
         ;checks if a bomb exits in bomb_array at position
-        if get_value(col,row) == '*'
+        if get_value(col,row) == board_tile_bomb
             return 1
         else
             return 0
