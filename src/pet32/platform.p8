@@ -2,10 +2,10 @@ platform {
 
     ubyte screen_width = 40
     ubyte screen_height = 25
-    ubyte grid_width = 30
-    ubyte grid_height = 19
-    ubyte grid_startx = 5
-    ubyte grid_starty = 3
+    ubyte[3] grid_width = [12,24,36]
+    ubyte[3] grid_height =[12,15,19]
+    ubyte[3] grid_startx = [14,8,2]
+    ubyte[3] grid_starty = [3,3,3]
 
    sub init() {
     }
@@ -22,6 +22,20 @@ platform {
 
     sub seed() {
         math.rndseed(mkword(cbm.TIME_MID, cbm.TIME_LO),peekw($e844))
+    }
+
+    sub splash_back() {
+        ubyte scrc_index
+        ubyte scrr_index
+        platform.seed()
+        for scrc_index in 1 to (screen_width - 2) {
+            for scrr_index in 1 to (screen_height - 2) {
+                if scrc_index <= 8 or scrc_index >= 31 {
+                    txt.setchr(scrc_index,scrr_index,102)
+                    txt.setclr(scrc_index,scrr_index,cbm.COLOR_GREY)
+                }
+            }
+        }
     }
 }
 

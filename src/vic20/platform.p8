@@ -4,13 +4,10 @@ platform {
 
     ubyte screen_width = txt.DEFAULT_WIDTH
     ubyte screen_height = txt.DEFAULT_HEIGHT
-
-    ; not used right now.
-    ;const ubyte SCREEN_SIZE = txt.DEFAULT_WIDTH
-    ubyte grid_width = 22
-    ubyte grid_height = 16
-    ubyte grid_startx = 0
-    ubyte grid_starty = 3
+    ubyte[3] grid_width = [12,18,22]
+    ubyte[3] grid_height =[12,16,16]
+    ubyte[3] grid_startx = [5,2,0]
+    ubyte[3] grid_starty = [3,3,3]
 
     sub init() {
         cbm.bdcol(game.border_color)
@@ -29,6 +26,9 @@ platform {
             return true
         }
         return false
+    }
+
+    sub splash_back() {
     }
 
 }

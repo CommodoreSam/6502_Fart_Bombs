@@ -15,9 +15,9 @@ main {
         platform.init()
         do {
             ubyte status=0
-            game.set_boardsize(platform.grid_width, platform.grid_height,
-                                platform.grid_startx, platform.grid_starty)
             game.draw_splash()
+            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty],
+                                platform.grid_startx[game.difficulty], platform.grid_starty[game.difficulty])
             game.draw_title()
             game.draw_scoreboard()
             game.draw_playboard()
@@ -84,14 +84,22 @@ game {
     const ubyte board_fgcolor = cbm.COLOR_YELLOW
     const ubyte board_tile_color = cbm.COLOR_YELLOW
     const ubyte board_scorecolor = cbm.COLOR_GREEN
-    ;const ubyte board_tile_revcolor = 14
     const ubyte board_tile_flagcolor = cbm.COLOR_RED
     const ubyte board_tile_bombcolor = cbm.COLOR_RED
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
-    ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
+    ubyte[] board_tile_num_color = [board_bgcolor,
+                                    cbm.COLOR_WHITE,
+                                    cbm.COLOR_GREEN,
+                                    cbm.COLOR_PURPLE,
+                                    cbm.COLOR_CYAN,
+                                    cbm.COLOR_YELLOW,
+                                    cbm.COLOR_BLUE,
+                                    cbm.COLOR_LIGHT_BLUE,
+                                    cbm.COLOR_PINK]
     ubyte current_char
     ubyte cursor_char = sc:'x'
     ubyte menu_offset = platform.screen_width / 2 - 10
+    ubyte difficulty
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -103,10 +111,11 @@ game {
     }
 
     sub draw_splash() {
-
+        difficulty=0
+        txt.cls()
+        platform.splash_back()
         ubyte exit_title = 'n'
         txt.color(board_fgcolor)
-        txt.cls()
         txt.rvs_on()
         txt.plot(menu_offset,0)
         ;          12345678901234567890
@@ -181,10 +190,11 @@ game {
         txt.rvs_off()
         txt.color(board_scorecolor)
         txt.plot(menu_offset,22)
-        txt.print(" >> press space <<")
+        txt.print("> difficulty? 1-3 <")
         do {
-            exit_title = cbm.GETIN2()
-        } until exit_title == ' '
+            difficulty = cbm.GETIN2()
+        } until difficulty >= 49 and difficulty <= 51
+        difficulty=difficulty - 49
     }
 
     sub draw_title() {
@@ -203,7 +213,7 @@ game {
     sub draw_scoreboard() {
         ;updates score board with each change
         txt.color(board_scorecolor)
-        txt.plot(board_topx + 1,board_topy - 1)
+        txt.plot(menu_offset,board_topy - 1)
         txt.print("found: ")
         txt.print_ub(bombs_found)
         txt.print(" left: ")
@@ -276,7 +286,7 @@ game {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ;randomly pick a number in range, when value is 4 it is a bomb.
                 ;increase or decrease bomb count by adjusting range
-                if math.randrange(10) == 4 {
+                if math.randrange(12 - (difficulty * 2)) == 4 {
                     set_value(col_index,row_index,board_tile_bomb)
                     total++
                 } else {
