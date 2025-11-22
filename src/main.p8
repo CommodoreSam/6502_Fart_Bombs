@@ -196,7 +196,7 @@ game {
         txt.color(board_fgcolor)
         txt.plot(menu_offset,0)
         txt.rvs_on()
-        txt.print(" 6502 fart b*mbs!! ")
+        txt.print("  6502 fart b*mbs!  ")
         txt.rvs_off()
     }
 
