@@ -6,7 +6,7 @@ platform {
     ubyte screen_height = txt.DEFAULT_HEIGHT
     ubyte[3] grid_width = [12,18,22]
     ubyte[3] grid_height =[12,16,16]
-    ubyte[3] grid_startx = [5,2,0]
+    ubyte[3] grid_startx = [4,2,0]
     ubyte[3] grid_starty = [3,3,3]
 
     sub init() {
