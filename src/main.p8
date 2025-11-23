@@ -26,7 +26,12 @@ main {
             game.draw_menu()
             status = game.play()
         } until status == 0
-
+        txt.cls()
+        txt.color(game.board_fgcolor)
+        txt.print("thanks for playing!\n")
+        txt.print(" 6502 fart b*mbs!\n")
+        txt.print(" by @commodoresam\n")
+        txt.print(" & andrew gillham\n")
     }
 }
 
@@ -123,7 +128,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v1.2         ")
+        txt.print("       v1.5         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
@@ -203,6 +208,7 @@ game {
         bombs_found=0
         bombs_left=0
         txt.cls()
+        platform.splash_back()
         txt.color(board_fgcolor)
         txt.plot(menu_offset,0)
         txt.rvs_on()
@@ -282,15 +288,20 @@ game {
         ubyte col_index
         ubyte row_index
         platform.seed()
-        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
-            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+        for col_index in 0 to 39 {
+            for row_index in 0 to 22 {
+                ;when screen array is within the board area
                 ;randomly pick a number in range, when value is 4 it is a bomb.
-                ;increase or decrease bomb count by adjusting range
-                if math.randrange(12 - (difficulty * 2)) == 4 {
-                    set_value(col_index,row_index,board_tile_bomb)
-                    total++
-                } else {
-                    set_value(col_index,row_index,' ')
+                ;Otherwise fill rest with spaces
+                set_value(col_index,row_index,' ')
+                if  col_index >= (board_topx + 1) and
+                    col_index <= (board_topx + col_count - 2) and
+                    row_index >= (board_topy + 1) and
+                    row_index <= (board_topy + row_count - 2) {
+                    if math.randrange(platform.grid_density[difficulty]) == 4 {
+                        set_value(col_index,row_index,board_tile_bomb)
+                        total++
+                    }
                 }
             }
         }
@@ -317,7 +328,7 @@ game {
 
     sub draw_menu() {
         txt.plot(menu_offset,board_topy + row_count + 1)
-        txt.print("                          ")
+        txt.print("                     ")
         txt.plot(menu_offset,board_topy + row_count)
         txt.color(board_scorecolor)
         txt.rvs_on()

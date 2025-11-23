@@ -8,6 +8,7 @@ platform {
     ubyte[3] grid_height =[12,16,16]
     ubyte[3] grid_startx = [4,2,0]
     ubyte[3] grid_starty = [3,3,3]
+    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
 
     sub init() {
         cbm.bdcol(game.border_color)

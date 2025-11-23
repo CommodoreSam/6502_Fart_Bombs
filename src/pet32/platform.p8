@@ -6,6 +6,7 @@ platform {
     ubyte[3] grid_height =[12,15,19]
     ubyte[3] grid_startx = [14,8,2]
     ubyte[3] grid_starty = [3,3,3]
+    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
 
    sub init() {
     }
