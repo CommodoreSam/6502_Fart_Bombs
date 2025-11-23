@@ -23,7 +23,7 @@ platform {
     }
 
     sub seed() {
-        math.rndseed(peekw(cbm.TIME_MID),peekw(plus4.STCHPOSHI))
+        math.rndseed(peekw(cbm.TIME_MID),peekw(plus4.RSTL8))
     }
 
     sub splash_back() {
