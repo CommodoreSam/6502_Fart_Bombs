@@ -36,7 +36,7 @@ EMU_REUSIZE=512
 EMU_REU=-reu -reusize $(EMU_REUSIZE)
 EMU=$(EMU_CMD) $(EMU_BASE) $(EMU_KERNAL) $(EMU_DISK) $(EMU_DOS) $(EMU_REU)
 
-PCC=prog8c-beta
+PCC=prog8c
 PCCARGSC64=-srcdirs src:src$(SEP)c64 -asmlist -target c64 -out build
 PCCARGSX16=-srcdirs src:src$(SEP)cx16 -asmlist -target cx16 -out build
 PCCARGSP32=-srcdirs src:src$(SEP)pet32 -asmlist -target pet32 -out build
