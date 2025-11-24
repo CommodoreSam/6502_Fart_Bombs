@@ -6,7 +6,7 @@ platform {
     ubyte[3] grid_height =[12,20,24]
     ubyte[3] grid_startx = [14,9,2]
     ubyte[3] grid_starty = [3,3,3]
-    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
+    ubyte[3] grid_density = [11,10,8] ;lower number means more bombs
 
     sub init() {
         cx16.set_screen_mode(3) ;screen 40x30 no border

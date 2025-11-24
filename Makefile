@@ -37,12 +37,12 @@ EMU_REU=-reu -reusize $(EMU_REUSIZE)
 EMU=$(EMU_CMD) $(EMU_BASE) $(EMU_KERNAL) $(EMU_DISK) $(EMU_DOS) $(EMU_REU)
 
 PCC=prog8c-beta
-PCCARGSC64=-srcdirs src:src/c64 -asmlist -target c64 -out build
-PCCARGSX16=-srcdirs src:src/cx16 -asmlist -target cx16 -out build
-PCCARGSP32=-srcdirs src:src/pet32 -asmlist -target pet32 -out build
-PCCARGS128=-srcdirs src:src/c128 -asmlist -target c128 -out build
-PCCARGSVIC=-srcdirs src:src/vic20 -asmlist -target config/vic20plus3.properties -out build
-PCCARGS264=-srcdirs src:src/plus4 -asmlist -target config/plus4.properties -out build
+PCCARGSC64=-srcdirs src:src$(SEP)c64 -asmlist -target c64 -out build
+PCCARGSX16=-srcdirs src:src$(SEP)cx16 -asmlist -target cx16 -out build
+PCCARGSP32=-srcdirs src:src$(SEP)pet32 -asmlist -target pet32 -out build
+PCCARGS128=-srcdirs src:src$(SEP)c128 -asmlist -target c128 -out build
+PCCARGSVIC=-srcdirs src:src$(SEP)vic20 -asmlist -target config$(SEP)vic20plus3.properties -out build
+PCCARGS264=-srcdirs src:src$(SEP)plus4 -asmlist -target config$(SEP)plus4.properties -out build
 
 PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg
 
