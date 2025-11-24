@@ -645,15 +645,15 @@ game {
 
 }
 
-txt {
-    %option merge
-
-    sub rvs_on() {
-        txt.chrout(18)
-    }
-
-    sub rvs_off() {
-        txt.chrout(146)
-    }
-}
+;txt {
+;    %option merge
+;
+;    sub rvs_on() {
+;        txt.chrout(18)
+;    }
+;
+;    sub rvs_off() {
+;        txt.chrout(146)
+;    }
+;}
 
