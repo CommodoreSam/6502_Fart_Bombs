@@ -7,14 +7,17 @@
 %import math
 %import syslib
 %import conv
+%import platform
 %zeropage basicsafe
 
 main {
     sub start() {
+        platform.init()
         do {
             ubyte status=0
-            game.set_boardsize(30,20,5,3)
             game.draw_splash()
+            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty],
+                                platform.grid_startx[game.difficulty], platform.grid_starty[game.difficulty])
             game.draw_title()
             game.draw_scoreboard()
             game.draw_playboard()
@@ -23,7 +26,12 @@ main {
             game.draw_menu()
             status = game.play()
         } until status == 0
-
+        txt.cls()
+        txt.color(game.board_fgcolor)
+        txt.print("thanks for playing!\n")
+        txt.print(" 6502 fart b*mbs!\n")
+        txt.print(" by @commodoresam\n")
+        txt.print(" & andrew gillham\n")
     }
 }
 
@@ -62,32 +70,41 @@ game {
     ubyte[40] row20
     ubyte[40] row21
     ubyte[40] row22
-    ubyte[40] row23
-    ubyte[40] row24
-    uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10, row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22, row23, row24]
+    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
+                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
     const ubyte board_lowerright = 189
-    const ubyte board_upperline = 99
-    const ubyte board_lowerline = 99
-    const ubyte board_leftline = 98
-    const ubyte board_rightline = 98
-    const ubyte board_tile_covered = 186
-    const ubyte board_tile_revcovered = 250
+    const ubyte board_upperline = 192
+    const ubyte board_lowerline = 192
+    const ubyte board_leftline = 221
+    const ubyte board_rightline = 221
+    const ubyte board_tile_covered = 250
+    const ubyte board_tile_revcovered = 186
     const ubyte board_tile_flag = 33
-    const ubyte board_tile_revflag = 161
     const ubyte board_tile_bomb = 42
-    const ubyte border_color = 6
-    const ubyte board_bgcolor = 0
-    const ubyte board_fgcolor = 7
-    const ubyte board_tile_color = 7
-    const ubyte board_scorecolor = 5
-    const ubyte board_tile_revcolor = 14
-    const ubyte board_tile_flagcolor = 2
-    const ubyte board_tile_bombcolor = 9
+    const ubyte border_color = cbm.COLOR_BLUE
+    const ubyte board_bgcolor = cbm.COLOR_BLACK
+    const ubyte board_fgcolor = cbm.COLOR_YELLOW
+    const ubyte board_tile_color = cbm.COLOR_YELLOW
+    const ubyte board_scorecolor = cbm.COLOR_GREEN
+    const ubyte board_tile_flagcolor = cbm.COLOR_RED
+    const ubyte board_tile_bombcolor = cbm.COLOR_RED
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
-    ubyte[] board_tile_num_color = [board_bgcolor,1,13,4,8,7,3,15,10]
+    ubyte[] board_tile_num_color = [board_bgcolor,
+                                    cbm.COLOR_WHITE,
+                                    cbm.COLOR_GREEN,
+                                    cbm.COLOR_PURPLE,
+                                    cbm.COLOR_CYAN,
+                                    cbm.COLOR_YELLOW,
+                                    cbm.COLOR_BLUE,
+                                    cbm.COLOR_LIGHT_BLUE,
+                                    cbm.COLOR_PINK]
+    ubyte current_char
+    ubyte cursor_char = sc:'x'
+    ubyte menu_offset = platform.screen_width / 2 - 10
+    ubyte difficulty
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
         ;sets the main board size variables
@@ -99,93 +116,90 @@ game {
     }
 
     sub draw_splash() {
-        ubyte exit_title = 'n'
-        c64.EXTCOL = border_color
-        c64.BGCOL0 = board_bgcolor
-        txt.color(board_fgcolor)
+        difficulty=0
         txt.cls()
+        platform.splash_back()
+        ubyte exit_title = 'n'
+        txt.color(board_fgcolor)
         txt.rvs_on()
-        txt.plot(8,1)
-        txt.print("                        ")
-        txt.plot(8,2)
-        txt.print("                        ")
-        txt.plot(8,3)
-        txt.print("    6502 fart bombs     ")
-        txt.plot(8,4)
-        txt.print("                        ")
-        txt.plot(8,5)
-        txt.print("                        ")
+        txt.plot(menu_offset,0)
+        ;          12345678901234567890
+        txt.print("                    ")
+        txt.plot(menu_offset,1)
+        txt.print("  6502 fart b*mbs!  ")
+        txt.plot(menu_offset,2)
+        txt.print("       v1.5         ")
         txt.rvs_off()
-        txt.plot(8,7)
-        txt.print("    by @commodoresam")
-        txt.plot(8,8)
-        txt.print("   v1.0  (2025.11.12)")
+        txt.plot(menu_offset,4)
+        txt.print("  by @commodoresam")
+        txt.plot(menu_offset,5)
+        txt.print("  & andrew gillham")
         txt.rvs_on()
-        txt.plot(1,11)
+        txt.plot(menu_offset,7)
         txt.print(" object ")
         txt.rvs_off()
-        txt.plot(1,12)
+        txt.plot(menu_offset,8)
         txt.color(board_scorecolor)
-        txt.print("place a flag over every fart bomb")
-        txt.plot(1,13)
-        txt.print("without blowing yourself up.")
+        ;          12345678901234567890
+        txt.print("-clear tiles.")
+        txt.plot(menu_offset,9)
+        txt.print("-flag bomb tiles.")
+        txt.plot(menu_offset,10)
+        txt.print("-number tiles")
+         txt.plot(menu_offset,11)
+        txt.print(" show bombs next")
+         txt.plot(menu_offset,12)
+        txt.print(" to that tile.")
+        txt.plot(menu_offset,13)
+        txt.print("-don't hit a b*mb!")
         txt.rvs_on()
         txt.color(board_fgcolor)
-        txt.plot(1,15)
-        txt.print(" game play ")
+        txt.plot(menu_offset,14)
+        txt.print(" keyboard control ")
         txt.rvs_off()
-        txt.plot(1,16)
+        txt.plot(menu_offset,15)
         txt.color(board_scorecolor)
-        txt.print("* move around using ")
+        txt.print("move:")
+        txt.plot(menu_offset+2,16)
         txt.rvs_on()
         txt.color(board_fgcolor)
         txt.print("wasd")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" or ")
+        txt.print(" / ")
         txt.rvs_on()
         txt.color(board_fgcolor)
-        txt.print("arrow keys")
+        txt.print("arrows")
         txt.rvs_off()
-        txt.plot(1,17)
+        txt.plot(menu_offset,17)
         txt.color(board_scorecolor)
-        txt.print("* press ")
+        txt.print("uncover:")
         txt.rvs_on()
         txt.color(board_fgcolor)
+        txt.plot(menu_offset+2,18)
         txt.print("space")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" to uncover a tile")
-        txt.plot(1,18)
-        txt.print("* when you uncover a number, that's")
-        txt.plot(1,19)
-        txt.print("  how many farts adjacent to it")
-        txt.rvs_off()
-        txt.plot(1,20)
-        txt.print("* use ")
+        txt.plot(menu_offset,19)
+        txt.print("flag:")
+        txt.plot(menu_offset+2,20)
         txt.rvs_on()
         txt.color(board_fgcolor)
         txt.print("f")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" to place a ")
+        txt.print(" marks flag ")
         txt.rvs_on()
         txt.color(board_tile_flagcolor)
         txt.print("!")
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.print(" flag over the fart bomb")
-        txt.plot(1,21)
-        txt.print("* uncover a fart bomb ")
-        txt.color(board_tile_bombcolor)
-        txt.print("*")
-        txt.color(board_scorecolor)
-        txt.print(" and you die!")
-        txt.plot(1,24)
-        txt.print("press space to continue...")
+        txt.plot(menu_offset,22)
+        txt.print("> difficulty? 1-3 <")
         do {
-            exit_title = cbm.GETIN2()
-        } until exit_title == ' '
+            difficulty = cbm.GETIN2()
+        } until difficulty >= 49 and difficulty <= 51
+        difficulty=difficulty - 49
     }
 
     sub draw_title() {
@@ -194,22 +208,23 @@ game {
         bombs_found=0
         bombs_left=0
         txt.cls()
+        platform.splash_back()
         txt.color(board_fgcolor)
-        txt.plot(board_topx+(col_count / 2 -9),0)
+        txt.plot(menu_offset,0)
         txt.rvs_on()
-        txt.print(" 6502 fart bombs ")
+        txt.print("  6502 fart b*mbs!  ")
         txt.rvs_off()
     }
 
     sub draw_scoreboard() {
         ;updates score board with each change
         txt.color(board_scorecolor)
-        txt.plot(board_topx + 1,board_topy - 1)
+        txt.plot(menu_offset,board_topy - 1)
         txt.print("found: ")
         txt.print_ub(bombs_found)
         txt.print(" left: ")
         txt.print_ub(bombs_left)
-        txt.print("     ")
+        txt.print("  ")
     }
 
     sub draw_playboard() {
@@ -250,20 +265,19 @@ game {
     sub midpart() {
         ;playboard middle tiles
         for x in 1 to col_count - 2 {
-            txt.chrout(board_tile_covered) ;covered character
+            txt.chrout(board_tile_revcovered) ;covered character
         }
     }
 
     sub set_bombs() {
         ;tell player bombs are being set
-        txt.plot(5,board_topy + row_count + 1)
+        txt.plot(menu_offset,board_topy + row_count + 1)
         txt.color(board_scorecolor)
-        txt.print("gas pressure is rising...")
+        txt.print("fart b*mbs loading...")
         ;place bombs
         bombs_total = bomb_rand()
         bombs_left=bombs_total
         game.draw_scoreboard()
-        ;calc numb tiles
     }
 
     sub bomb_rand() -> ubyte {
@@ -273,16 +287,21 @@ game {
         ubyte total=0
         ubyte col_index
         ubyte row_index
-        math.rndseed(peekw($a1)+1,peekw($d012)+1)
-        for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
-            for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
+        platform.seed()
+        for col_index in 0 to 39 {
+            for row_index in 0 to 22 {
+                ;when screen array is within the board area
                 ;randomly pick a number in range, when value is 4 it is a bomb.
-                ;increase or decrease bomb count by adjusting range
-                if math.randrange(10) == 4 {
-                    set_value(col_index,row_index,board_tile_bomb)
-                    total++
-                } else {
-                    set_value(col_index,row_index,' ')
+                ;Otherwise fill rest with spaces
+                set_value(col_index,row_index,' ')
+                if  col_index >= (board_topx + 1) and
+                    col_index <= (board_topx + col_count - 2) and
+                    row_index >= (board_topy + 1) and
+                    row_index <= (board_topy + row_count - 2) {
+                    if math.randrange(platform.grid_density[difficulty]) == 4 {
+                        set_value(col_index,row_index,board_tile_bomb)
+                        total++
+                    }
                 }
             }
         }
@@ -308,27 +327,28 @@ game {
     }
 
     sub draw_menu() {
-        txt.plot(5,board_topy + row_count + 1)
-        txt.print("                          ")
-        txt.plot(board_topx,board_topy + row_count)
+        txt.plot(menu_offset,board_topy + row_count + 1)
+        txt.print("                     ")
+        txt.plot(menu_offset,board_topy + row_count)
         txt.color(board_scorecolor)
         txt.rvs_on()
         txt.print("wasd")
         txt.rvs_off()
-        txt.print("=move ")
+        txt.print("=move    ")
         txt.rvs_on()
         txt.print("f")
         txt.rvs_off()
         txt.print("=flag ")
+        txt.plot(menu_offset+5,board_topy + row_count+1)
         txt.rvs_on()
         txt.print("space")
         txt.rvs_off()
         txt.print("=uncover ")
-        txt.plot(board_topx,board_topy + row_count+1)
+        txt.plot(menu_offset,board_topy + row_count+2)
         txt.rvs_on()
         txt.print("l")
         txt.rvs_off()
-        txt.print("=leave          ")
+        txt.print("=leave  ")
         txt.rvs_on()
         txt.print("n")
         txt.rvs_off()
@@ -346,6 +366,9 @@ game {
         @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
+            if platform.blink_timer() {
+                game.blink_char(col_current,row_current)
+        }
             if cbm.STOP2()
                 return 0
 
@@ -409,9 +432,9 @@ game {
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
-                    if under == 32 or under == 160      ;space or reverse space meaning everything around is not bomb
+                    if under == 32      ;space or reverse space meaning everything around is not bomb
                         uncover_around(col_current,row_current)
-                    if under == 42 or under == 170 {    ;you hit a bomb dummy
+                    if under == 42 {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
@@ -427,11 +450,13 @@ game {
     sub uncover(ubyte xf, ubyte yf) -> ubyte {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
-        if (txt.getchr(board_topx+xf, board_topy+yf) == board_tile_covered or
-            txt.getchr(board_topx+xf, board_topy+yf) == board_tile_revcovered) {
-            txt.plot(board_topx+xf, board_topy+yf)
-            under_char=get_value(board_topx+xf, board_topy+yf)
-            txt.chrout(under_char)
+        ubyte temp_char = txt.getchr(board_topx+xf, board_topy+yf)
+        if temp_char == board_tile_covered or
+            temp_char == cursor_char or
+            temp_char == ' ' {
+            under_char = get_value(board_topx+xf, board_topy+yf)
+            txt.setchr(board_topx+xf, board_topy+yf, under_char)
+            cursor_off(xf,yf)
         }
         return under_char
     }
@@ -446,14 +471,7 @@ game {
         void uncover(xe+1,ye-1)
         void uncover(xe+1,ye)
         void uncover(xe+1,ye+1)
-        cursor_off(xe-1,ye-1)
-        cursor_off(xe-1,ye)
-        cursor_off(xe-1,ye+1)
-        cursor_off(xe,ye-1)
-        cursor_off(xe,ye+1)
-        cursor_off(xe+1,ye-1)
-        cursor_off(xe+1,ye)
-        cursor_off(xe+1,ye+1)
+
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
@@ -462,9 +480,10 @@ game {
         ;deflag only if a flag
         ;when at bombs left at 0 check to see if all actually found
         ubyte complete='n'
+        if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
+            txt.setchr(board_topx+xf,board_topy+yf,current_char)
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
-        if testchr == board_tile_flag or
-            testchr == board_tile_flag ^ 128 {
+        if testchr == board_tile_flag ^ 128 {
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
             txt.rvs_on()
@@ -474,7 +493,7 @@ game {
             bombs_found--
         }
         else {
-            if bombs_left ==0 or (testchr!= board_tile_covered and testchr != board_tile_revcovered)
+            if bombs_left == 0 or testchr!= board_tile_covered
                 return complete
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
@@ -485,9 +504,9 @@ game {
             bombs_found++
         }
         draw_scoreboard()
-        cursor_on(xf,yf)
         if bombs_left == 0
             complete=check_bombs()
+        cursor_on(xf,yf) ;must be after the check or cursor may get reintroduced
         return complete
     }
 
@@ -498,10 +517,9 @@ game {
         ubyte bomb_matches=0
         for col_index in (board_topx + 1) to (board_topx + col_count - 2) {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
-                ubyte isit = is_bomb (col_index,row_index)
+                ubyte isit = is_bomb(col_index,row_index)
                 if isit == 1 {
-                    if txt.getchr(col_index, row_index) == board_tile_flag or
-                        txt.getchr(col_index,row_index) == board_tile_flag ^ 128 {
+                    if txt.getchr(col_index, row_index) == board_tile_flag ^ 128 {
                         bomb_matches++
                     }
                 }
@@ -523,7 +541,7 @@ game {
                 if isit == 1 {
                     txt.plot(col_index,row_index)
                     txt.color(board_tile_bombcolor)
-                    txt.chrout('*')
+                    txt.chrout(board_tile_bomb)
                 }
             }
         }
@@ -546,7 +564,7 @@ game {
 
     sub is_bomb(ubyte col, ubyte row) -> ubyte {
         ;checks if a bomb exits in bomb_array at position
-        if get_value(col,row) == '*'
+        if get_value(col,row) == board_tile_bomb
             return 1
         else
             return 0
@@ -554,26 +572,32 @@ game {
 
     sub cursor_on(ubyte xa, ubyte ya) {
         ;shows the cursor at the specified tile
-        if txt.getchr(board_topx+xa,board_topy+ya) == ' '
-            txt.setchr(board_topx+xa,board_topy+ya,' ' ^ 128)
-        txt.setclr(board_topx+xa,board_topy+ya,board_tile_revcolor)
+        if txt.getchr(board_topx+xa,board_topy+ya) != cursor_char {
+            current_char = txt.getchr(board_topx+xa,board_topy+ya)
+            txt.setchr(board_topx+xa,board_topy+ya,cursor_char)
+        }
+    }
+
+    sub blink_char(ubyte xz, ubyte yz) {
+        if txt.getchr(board_topx+xz,board_topy+yz) != cursor_char
+            txt.setchr(board_topx+xz,board_topy+yz,cursor_char)
+        else
+            txt.setchr(board_topx+xz,board_topy+yz,current_char)
     }
 
     sub cursor_off(ubyte xb, ubyte yb) {
         ;redraws a tile in right color once cursor leaves or tile is modified by a process
-        ubyte current_char = txt.getchr(board_topx+xb,board_topy+yb)
-        when current_char {
-            board_tile_covered, board_tile_revcovered -> {
+        if txt.getchr(board_topx+xb,board_topy+yb) == cursor_char
+            txt.setchr(board_topx+xb,board_topy+yb,current_char)
+        when txt.getchr(board_topx+xb,board_topy+yb) {
+            board_tile_covered, ' ' -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_color)
             }
-            board_tile_flag, board_tile_revflag -> {
+            board_tile_flag -> {
                 txt.setclr(board_topx+xb,board_topy+yb,board_tile_flagcolor)
             }
             '1','2','3','4','5','6','7','8' -> {
-                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[current_char-48])
-            }
-            ' ', 160 -> {
-                txt.setchr(board_topx+xb,board_topy+yb,' ')
+                txt.setclr(board_topx+xb,board_topy+yb,board_tile_num_color[txt.getchr(board_topx+xb,board_topy+yb)-48])
             }
         }
     }
@@ -583,18 +607,35 @@ game {
         ;anytime a choice to play again happens win, lose, quit/leave
         ;returns the again answer
         ubyte again = 'x'
-        txt.plot(1,board_topy + row_count)
-        txt.color(5)
-        txt.print("                                     ")
-        txt.plot(1,board_topy + row_count + 1)
+        txt.color(board_scorecolor)
+        txt.plot(menu_offset,board_topy + row_count)
+        txt.print("                    ")
+        txt.plot(menu_offset,board_topy + row_count+1)
+        txt.print("                    ")
+        txt.plot(menu_offset,board_topy + row_count+2)
+        txt.print("                    ")
         when reason {
             'l' -> {
-                txt.print("boom! you lose... play again (y/n)?   ")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("boom! you lose...")
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("play again (y/n)?")
                 show_bombs()
             }
-            'w' -> txt.print("awesome, you won!!! play again (y/n)? ")
-            'n' -> txt.print("        new game (y/n)?               ")
-            'q' -> txt.print("        leave game (y/n)?             ")
+            'w' -> {
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("awesome, you won!!!")
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("play again (y/n)?")
+            }
+            'q' -> {
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("leave game (y/n)?")
+            }
+            'n' -> {
+                txt.plot(menu_offset,board_topy + row_count + 2)
+                txt.print("new game (y/n)?")
+            }
         }
         do {
             again = cbm.GETIN2()
