@@ -16,8 +16,7 @@ main {
         do {
             ubyte status=0
             game.draw_splash()
-            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty],
-                                platform.grid_startx[game.difficulty], platform.grid_starty[game.difficulty])
+            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty])
             game.draw_title()
             game.draw_scoreboard()
             game.draw_playboard()
@@ -38,9 +37,9 @@ main {
 game {
     alias bomb_array = platform.bomb_array
     alias menu_offset = platform.init.menu_offset
-    ubyte bombs_total
-    ubyte bombs_found
-    ubyte bombs_left
+    uword bombs_total
+    uword bombs_found
+    uword bombs_left
     ubyte col_count
     ubyte row_count
     ubyte board_topx
@@ -82,13 +81,13 @@ game {
     ubyte cursor_char = sc:'x'
     ubyte difficulty
 
-   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
+   sub set_boardsize(ubyte columns, ubyte rows) {
         ;sets the main board size variables
         ;board variables always include borders
         col_count = columns
         row_count = rows
-        board_topx = startx
-        board_topy = starty
+        board_topx = (platform.screen_width / 2) - (columns / 2)
+        board_topy = 3
     }
 
     sub draw_splash() {
@@ -171,10 +170,12 @@ game {
         txt.rvs_off()
         txt.color(board_scorecolor)
         txt.plot(menu_offset,22)
-        txt.print("> difficulty? 1-3 <")
+        txt.print("> difficulty? 1-")
+        txt.print_ub(platform.max_difficulty)
+        txt.print(" <")
         do {
             difficulty = cbm.GETIN2()
-        } until difficulty >= 49 and difficulty <= 51
+        } until difficulty >= 49 and difficulty <= platform.max_difficulty + 48
         difficulty=difficulty - 49
     }
 
@@ -197,9 +198,9 @@ game {
         txt.color(board_scorecolor)
         txt.plot(menu_offset,board_topy - 1)
         txt.print("found: ")
-        txt.print_ub(bombs_found)
+        txt.print_uw(bombs_found)
         txt.print(" left: ")
-        txt.print_ub(bombs_left)
+        txt.print_uw(bombs_left)
         txt.print("  ")
     }
 

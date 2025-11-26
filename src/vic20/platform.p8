@@ -30,12 +30,10 @@ platform {
     uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
                             row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
                             row21, row22]
-
-    ubyte[3] grid_width = [12,18,22]
-    ubyte[3] grid_height =[12,16,16]
-    ubyte[3] grid_startx = [4,2,0]
-    ubyte[3] grid_starty = [3,3,3]
-    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
+    ubyte max_difficulty = 5
+    ubyte[5] grid_width = [12,18,22,22,22]
+    ubyte[5] grid_height =[12,16,16,16,16]
+    ubyte[5] grid_density = [11,10,9,8,7] ;lower number means more bombs
 
     sub init() {
         ubyte menu_offset = platform.screen_width / 2 - 10
