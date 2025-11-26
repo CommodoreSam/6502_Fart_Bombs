@@ -103,7 +103,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v1.5         ")
+        txt.print("       v1.6         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
