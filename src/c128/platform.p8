@@ -2,6 +2,34 @@ platform {
 
     ubyte screen_width = 40
     ubyte screen_height = 25
+    ubyte[80] row0
+    ubyte[80] row1
+    ubyte[80] row2
+    ubyte[80] row3
+    ubyte[80] row4
+    ubyte[80] row5
+    ubyte[80] row6
+    ubyte[80] row7
+    ubyte[80] row8
+    ubyte[80] row9
+    ubyte[80] row10
+    ubyte[80] row11
+    ubyte[80] row12
+    ubyte[80] row13
+    ubyte[80] row14
+    ubyte[80] row15
+    ubyte[80] row16
+    ubyte[80] row17
+    ubyte[80] row18
+    ubyte[80] row19
+    ubyte[80] row20
+    ubyte[80] row21
+    ubyte[80] row22
+    ubyte[80] row23
+    ubyte[80] row24
+    uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
+                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
+                            row21, row22, row23, row24]
     ubyte[3] grid_width = [12,24,36]
     ubyte[3] grid_height =[12,15,19]
     ubyte[3] grid_startx = [14,8,2]
@@ -9,6 +37,7 @@ platform {
     ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
 
     sub init() {
+        ubyte menu_offset = platform.screen_width / 2 - 10
         c64.EXTCOL = game.border_color
         c64.BGCOL0 = game.board_bgcolor
     }

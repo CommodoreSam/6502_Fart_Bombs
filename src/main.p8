@@ -36,6 +36,8 @@ main {
 }
 
 game {
+    alias bomb_array = platform.bomb_array
+    alias menu_offset = platform.init.menu_offset
     ubyte bombs_total
     ubyte bombs_found
     ubyte bombs_left
@@ -47,31 +49,6 @@ game {
     ubyte row_current
     ubyte x
     ubyte y
-    ubyte[40] row0
-    ubyte[40] row1
-    ubyte[40] row2
-    ubyte[40] row3
-    ubyte[40] row4
-    ubyte[40] row5
-    ubyte[40] row6
-    ubyte[40] row7
-    ubyte[40] row8
-    ubyte[40] row9
-    ubyte[40] row10
-    ubyte[40] row11
-    ubyte[40] row12
-    ubyte[40] row13
-    ubyte[40] row14
-    ubyte[40] row15
-    ubyte[40] row16
-    ubyte[40] row17
-    ubyte[40] row18
-    ubyte[40] row19
-    ubyte[40] row20
-    ubyte[40] row21
-    ubyte[40] row22
-    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
-                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
@@ -103,7 +80,6 @@ game {
                                     cbm.COLOR_PINK]
     ubyte current_char
     ubyte cursor_char = sc:'x'
-    ubyte menu_offset = platform.screen_width / 2 - 10
     ubyte difficulty
 
    sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
@@ -288,8 +264,8 @@ game {
         ubyte col_index
         ubyte row_index
         platform.seed()
-        for col_index in 0 to 39 {
-            for row_index in 0 to 22 {
+        for col_index in 0 to platform.screen_width -1 {
+            for row_index in 0 to platform.screen_height - 2 {
                 ;when screen array is within the board area
                 ;randomly pick a number in range, when value is 4 it is a bomb.
                 ;Otherwise fill rest with spaces
