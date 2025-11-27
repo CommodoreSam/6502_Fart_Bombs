@@ -78,7 +78,7 @@ platform {
         ubyte menu_offset = platform.screen_width / 2 - 10
         if screen_width == 80 and screen_height == 60
             max_difficulty = 7
-        cx16.set_screen_mode(3) ;screen 40x30 no border
+        ;cx16.set_screen_mode(3) ;screen 40x30 no border
         ;cx16.VERA_DC_BORDER = 6
     }
 
