@@ -68,7 +68,7 @@ platform {
                             row31, row32, row33, row34, row35, row36, row37, row38, row39, row40,
                             row41, row42, row43, row44, row45, row46, row47, row48, row49, row50,
                             row51, row52, row53, row54, row55, row56, row57, row58, row59]
-    ubyte max_difficulty = 5
+    ubyte max_difficulty = 4
     ubyte[7] grid_width = [12,22,30,36,60,76,76]
     ubyte[7] grid_height =[12,20,24,24,50,50,50]
     ubyte[7] grid_density = [11,10,9,8,8,8,7] ;lower number means more bombs
@@ -76,9 +76,9 @@ platform {
     sub init() {
         void, screen_width, screen_height = cx16.get_screen_mode()
         ubyte menu_offset = platform.screen_width / 2 - 10
-        if screen_width == 80
+        if screen_width == 80 and screen_height == 60
             max_difficulty = 7
-        ;cx16.set_screen_mode(3) ;screen 40x30 no border
+        cx16.set_screen_mode(3) ;screen 40x30 no border
         ;cx16.VERA_DC_BORDER = 6
     }
 
