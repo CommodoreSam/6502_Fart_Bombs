@@ -43,8 +43,9 @@ PCCARGSP32=-srcdirs src:src$(SEP)pet32 -asmlist -target pet32 -out build
 PCCARGS128=-srcdirs src:src$(SEP)c128 -asmlist -target c128 -out build
 PCCARGSVIC=-srcdirs src:src$(SEP)vic20 -asmlist -target config$(SEP)vic20plus3.properties -out build
 PCCARGS264=-srcdirs src:src$(SEP)plus4 -asmlist -target config$(SEP)plus4.properties -out build
+PCCARGSM65=-srcdirs src:src$(SEP)mega65 -asmlist -target config$(SEP)mega65.properties -out build
 
-PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg
+PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg build/6502fb-mega65.prg
 
 SRCS	= src/main.p8
 
@@ -77,6 +78,10 @@ build/6502fb-plus4.prg: $(SRCS) src/plus4/platform.p8
 	$(PCC) $(PCCARGS264) $<
 	mv build/main.prg build/6502fb-plus4.prg
 
+build/6502fb-mega65.prg: $(SRCS) src/mega65/platform.p8
+	$(PCC) $(PCCARGSM65) $<
+	mv build/main.prg build/6502fb-mega65.prg
+
 clean:
 	$(RM) build$(SEP)*
 
@@ -101,6 +106,9 @@ emu-vic20:	all
 
 emu-plus4:	all
 	xplus4 -default -model plus4ntsc -autostartprgmode 1 build/6502fb-plus4.prg
+
+emu-mega65:	all
+	xmega65 -besure -videostd 1 -prgmode 65 -prg build/6502fb-mega65.prg
 
 
 #
