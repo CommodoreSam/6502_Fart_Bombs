@@ -439,15 +439,12 @@ game {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
         ubyte temp_char = txt.getchr(board_topx+xf, board_topy+yf)
-        if temp_char == board_tile_covered
+        if temp_char == board_tile_covered or temp_char == cursor_char {
             uncovered++
-        if temp_char == board_tile_covered or
-            temp_char == cursor_char or
-            temp_char == ' ' {
             under_char = get_value(board_topx+xf, board_topy+yf)
             txt.setchr(board_topx+xf, board_topy+yf, under_char)
             cursor_off(xf,yf)
-        }
+            }
         return under_char
     }
 

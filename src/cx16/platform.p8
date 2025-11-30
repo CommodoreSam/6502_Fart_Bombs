@@ -81,11 +81,32 @@ platform {
     ubyte restore_color = 0                     ; save text color color
 
     sub cleanup() {
-
+        ; Restore initial screen size
+        if restore_width != 0 {
+            ; restore video mode
+            set_screen_mode(restore_width)
+        }
     }
 
     sub set_screen_mode(ubyte mode) {
+        when mode {
+            40 -> {
+                cx16.set_screen_mode(3)
+                screen_height = 30
+            }
 
+            80 -> {
+                cx16.set_screen_mode(0)
+                screen_height = 60
+            }
+            ; do nothing for invalid modes
+            else -> {
+                txt.print("BOGUS SCREEN MODE")
+                repeat {}
+            }
+        }
+        screen_width = mode
+        platform.init.menu_offset = screen_width / 2 - 10
     }
 
     sub get_screen_mode() -> ubyte, ubyte, ubyte {
@@ -96,10 +117,9 @@ platform {
     sub init() {
         void, screen_width, screen_height = cx16.get_screen_mode()
         ubyte menu_offset = platform.screen_width / 2 - 10
+        restore_width = screen_width
         if screen_width == 80 and screen_height == 60
             max_difficulty = 7
-        ;cx16.set_screen_mode(3) ;screen 40x30 no border
-        ;cx16.VERA_DC_BORDER = 6
     }
 
     sub seed() {
