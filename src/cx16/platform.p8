@@ -2,6 +2,7 @@ platform {
 
     ubyte screen_width = 80
     ubyte screen_height = 60
+    const ubyte title_width = 40
     ubyte[80] row0
     ubyte[80] row1
     ubyte[80] row2
@@ -72,6 +73,25 @@ platform {
     ubyte[7] grid_width = [12,22,30,36,60,76,76]
     ubyte[7] grid_height =[12,20,24,24,50,50,50]
     ubyte[7] grid_density = [11,10,9,8,8,8,7] ;lower number means more bombs
+    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte restore_width = 0                     ; video mode to restore to on exit
+    ubyte restore_height = 0                    ; video mode to restore to on exit
+    ubyte restore_bdcolor = 0                   ; save border color
+    ubyte restore_bgcolor = 0                   ; save background color
+    ubyte restore_color = 0                     ; save text color color
+
+    sub cleanup() {
+
+    }
+
+    sub set_screen_mode(ubyte mode) {
+
+    }
+
+    sub get_screen_mode() -> ubyte, ubyte, ubyte {
+    return 0,0,0
+    }
+
 
     sub init() {
         void, screen_width, screen_height = cx16.get_screen_mode()

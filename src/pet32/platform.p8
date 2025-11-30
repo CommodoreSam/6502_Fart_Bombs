@@ -2,6 +2,7 @@ platform {
 
     ubyte screen_width = 40
     ubyte screen_height = 25
+    const ubyte title_width = 40
     ubyte[40] row0
     ubyte[40] row1
     ubyte[40] row2
@@ -34,6 +35,25 @@ platform {
     ubyte[5] grid_width = [12,24,30,36,36]
     ubyte[5] grid_height =[12,15,19,19,19]
     ubyte[5] grid_density = [11,10,8,8,7] ;lower number means more bombs
+    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte restore_width = 0                     ; video mode to restore to on exit
+    ubyte restore_height = 0                    ; video mode to restore to on exit
+    ubyte restore_bdcolor = 0                   ; save border color
+    ubyte restore_bgcolor = 0                   ; save background color
+    ubyte restore_color = 0                     ; save text color color
+
+    sub cleanup() {
+
+    }
+
+    sub set_screen_mode(ubyte mode) {
+
+    }
+
+    sub get_screen_mode() -> ubyte, ubyte, ubyte {
+    return 0,0,0
+    }
+
 
    sub init() {
     ubyte menu_offset = platform.screen_width / 2 - 10

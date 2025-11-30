@@ -15,7 +15,9 @@ main {
         platform.init()
         do {
             ubyte status=0
+            platform.set_screen_mode(platform.title_width)
             game.draw_splash()
+            platform.set_screen_mode(platform.grid_mode[game.difficulty])
             game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty])
             game.draw_title()
             game.draw_scoreboard()
@@ -25,6 +27,7 @@ main {
             game.draw_menu()
             status = game.play()
         } until status == 0
+        platform.cleanup()
         txt.cls()
         txt.color(game.board_fgcolor)
         txt.print("thanks for playing!\n")
@@ -104,7 +107,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v1.7         ")
+        txt.print("       v1.8         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")

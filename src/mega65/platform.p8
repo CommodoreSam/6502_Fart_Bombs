@@ -2,56 +2,107 @@ platform {
 
     ubyte screen_width = 40
     ubyte screen_height = 25
-    ubyte[40] row0
-    ubyte[40] row1
-    ubyte[40] row2
-    ubyte[40] row3
-    ubyte[40] row4
-    ubyte[40] row5
-    ubyte[40] row6
-    ubyte[40] row7
-    ubyte[40] row8
-    ubyte[40] row9
-    ubyte[40] row10
-    ubyte[40] row11
-    ubyte[40] row12
-    ubyte[40] row13
-    ubyte[40] row14
-    ubyte[40] row15
-    ubyte[40] row16
-    ubyte[40] row17
-    ubyte[40] row18
-    ubyte[40] row19
-    ubyte[40] row20
-    ubyte[40] row21
-    ubyte[40] row22
-    ubyte[40] row23
-    ubyte[40] row24
+    const ubyte title_width = 40
+    ubyte[80] row0
+    ubyte[80] row1
+    ubyte[80] row2
+    ubyte[80] row3
+    ubyte[80] row4
+    ubyte[80] row5
+    ubyte[80] row6
+    ubyte[80] row7
+    ubyte[80] row8
+    ubyte[80] row9
+    ubyte[80] row10
+    ubyte[80] row11
+    ubyte[80] row12
+    ubyte[80] row13
+    ubyte[80] row14
+    ubyte[80] row15
+    ubyte[80] row16
+    ubyte[80] row17
+    ubyte[80] row18
+    ubyte[80] row19
+    ubyte[80] row20
+    ubyte[80] row21
+    ubyte[80] row22
+    ubyte[80] row23
+    ubyte[80] row24
     uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
                             row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
                             row21, row22, row23, row24]
-    ubyte max_difficulty = 5
-    ubyte[5] grid_width = [12,24,30,36,36]
-    ubyte[5] grid_height =[12,15,19,19,19]
-    ubyte[5] grid_density = [11,10,8,8,7] ;lower number means more bombs
+    ubyte max_difficulty = 7
+    ubyte[7] grid_width = [12,24,30,36,60,76,76]
+    ubyte[7] grid_height =[12,15,19,19,19,19,19]
+    ubyte[7] grid_density = [11,10,8,8,8,8,7]   ;lower number means more bombs
+    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte restore_width = 0                     ; video mode to restore to on exit
+    ubyte restore_height = 0                    ; video mode to restore to on exit
+    ubyte restore_bdcolor = 0                   ; save border color
+    ubyte restore_bgcolor = 0                   ; save background color
+    ubyte restore_color = 0                     ; save text color color
 
     sub init() {
-        ubyte menu_offset = platform.screen_width / 2 - 10
+        screen_width, screen_height = cbm.SCREEN()
+        ; adjust from zero relative
+        screen_width++
+        screen_height++
+
+        ;ubyte menu_offset = platform.screen_width / 2 - 10
+        ubyte menu_offset = title_width / 2 - 10
+        restore_width = screen_width
+        restore_height = screen_height
+        restore_bdcolor = mega65.EXTCOL
+        restore_bgcolor = mega65.BGCOL0
+        ;restore_color = cbm.COLOR  ; TODO: need to find this or read color ram.
+
+        ; set game colors
         mega65.EXTCOL = game.border_color
         mega65.BGCOL0 = game.board_bgcolor
 
-        ; use "Escape + 4" to change screen size (not working)
-        ;txt.chrout(27)
-        ;txt.chrout(4)
+        ; change to 40x25 mode
+        ;set_screen_mode(40)
 
-        ; change to 40x25 mode (TODO: define registers)
-        @($d031) &= 127
-        @($d058) = 80
-        @($d059) = 0
+    }
 
-        ; not needed?
-        ;@($d05e) = 40
-        ;@($d07b) = 25
+    ; cleanup before exit, restoring video mode and/or colors.
+    sub cleanup() {
+        ; Restore initial screen size
+        if restore_width != 0 {
+            ; restore video mode
+            set_screen_mode(restore_width)
+        }
+        mega65.EXTCOL = restore_bdcolor
+        mega65.BGCOL0 = restore_bgcolor
+        ;txt.color(restore_color)
+    }
+
+    sub set_screen_mode(ubyte mode) {
+        when mode {
+            40 -> {
+                ; use "Escape + 4" to change screen size
+                txt.chrout(27)
+                txt.chrout('4')
+            }
+
+            80 -> {
+                ; use "Escape + 8" to change screen size
+                txt.chrout(27)
+                txt.chrout('8')
+            }
+            ; do nothing for invalid modes
+            else -> {
+                txt.print("BOGUS SCREEN MODE")
+                repeat {}
+            }
+        }
+        screen_width = mode
+        screen_height = 25
+        platform.init.menu_offset = screen_width / 2 - 10
+    }
+
+    sub get_screen_mode() -> ubyte, ubyte, ubyte {
+        return 0,0,0
     }
 
     bool last_timer = false
@@ -80,7 +131,7 @@ platform {
         platform.seed()
         for scrc_index in 1 to (screen_width - 2) {
             for scrr_index in 1 to (screen_height - 2) {
-                if scrc_index <= 8 or scrc_index >= 31 {
+                if scrc_index <= (screen_width / 2 - 12) or scrc_index >= screen_width / 2 + 11 {
                     txt.setchr(scrc_index,scrr_index,102)
                     txt.setclr(scrc_index,scrr_index,cbm.COLOR_GREY)
                 }
