@@ -80,6 +80,7 @@ game {
     ubyte current_char
     ubyte cursor_char = sc:'x'
     ubyte difficulty
+    uword uncovered
 
    sub set_boardsize(ubyte columns, ubyte rows) {
         ;sets the main board size variables
@@ -103,7 +104,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v1.6         ")
+        txt.print("       v1.7         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
@@ -409,8 +410,15 @@ game {
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
-                    if under == 32      ;space or reverse space meaning everything around is not bomb
-                        uncover_around(col_current,row_current)
+                    if under == 32 {     ;space or reverse space meaning everything around is not bomb
+                        do {
+                            uncovered=0
+                            uncover_toborderrd()
+                            uncover_toborderlu()
+                            uncover_toborderdr()
+                            uncover_toborderul()
+                        } until uncovered == 0
+                    }
                     if under == 42 {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
@@ -428,6 +436,8 @@ game {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
         ubyte temp_char = txt.getchr(board_topx+xf, board_topy+yf)
+        if temp_char == board_tile_covered
+            uncovered++
         if temp_char == board_tile_covered or
             temp_char == cursor_char or
             temp_char == ' ' {
@@ -449,6 +459,50 @@ game {
         void uncover(xe+1,ye)
         void uncover(xe+1,ye+1)
 
+    }
+    
+    sub uncover_toborderrd() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for col_spc in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_spc in (board_topy + 1) to (board_topy + row_count - 2) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderdr() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for row_spc in (board_topy + 1) to (board_topy + row_count - 2) {
+            for col_spc in (board_topx + 1) to (board_topx + col_count - 2) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderlu() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for col_spc in (board_topx + col_count - 2) to (board_topx + 1)  {
+            for row_spc in (board_topy + row_count - 2) to (board_topy + 1) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderul() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for row_spc in (board_topy + row_count - 2) to (board_topy + 1) {
+            for col_spc in (board_topx + col_count - 2) to (board_topx + 1)  {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
@@ -542,6 +596,16 @@ game {
     sub is_bomb(ubyte col, ubyte row) -> ubyte {
         ;checks if a bomb exits in bomb_array at position
         if get_value(col,row) == board_tile_bomb
+            return 1
+        else
+            return 0
+    }
+
+    sub is_space(ubyte col, ubyte row) -> ubyte {
+        ;checks if a space exits in bomb_array at position
+        if txt.getchr(col,row) == cursor_char
+            txt.setchr(col,row,current_char)
+        if txt.getchr(col,row) == 32
             return 1
         else
             return 0
