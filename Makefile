@@ -89,25 +89,25 @@ disk:
 	c1541 -format $(DISKNAME),52 $(DISKTYPE) $(DISK)
 	c1541 -attach $(DISK) -write build/6502fb-c64.prg 6502fb,p
 
-emu:	all disk
+emu-c64:	build/6502fb-c64.prg
 	$(EMU) -autostartprgmode 1 build/6502fb-c64.prg
 
-emu-x16:	all
+emu-cx16:	build/6502fb-cx16.prg
 	x16emu -scale 2 -run -prg build/6502fb-cx16.prg
 
-emu-p32:	all
+emu-pet32:	build/6502fb-pet32.prg
 	xpet -model 4032 -autostartprgmode 1 build/6502fb-pet32.prg
 
-emu-c128:	all
+emu-c128:	build/6502fb-c128.prg
 	x128 -autostartprgmode 1 build/6502fb-c128.prg
 
-emu-vic20:	all
-	xvic -model vic20ntsc -memory 3k -autostartprgmode 1 build/6502fb-vic20.prg
+emu-vic20:	build/6502fb-vic20.prg
+	xvic -model vic20ntsc -memory 8k -autostartprgmode 1 build/6502fb-vic20.prg
 
-emu-plus4:	all
+emu-plus4:	build/6502fb-plus4.prg
 	xplus4 -default -model plus4ntsc -autostartprgmode 1 build/6502fb-plus4.prg
 
-emu-mega65:	all
+emu-mega65:	build/6502fb-mega65.prg
 	xmega65 -besure -videostd 1 -prgmode 65 -prg build/6502fb-mega65.prg
 
 
