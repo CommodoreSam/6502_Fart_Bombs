@@ -87,7 +87,7 @@ clean:
 
 disk:
 	c1541 -format $(DISKNAME),52 $(DISKTYPE) $(DISK)
-	c1541 -attach $(DISK) -write build/6502fb-c64.prg 6502fb,p
+	c1541 -attach $(DISK) -write build/6502fb-c64.prg 6502fb-c64,p
 
 emu-c64:	build/6502fb-c64.prg
 	$(EMU) -autostartprgmode 1 build/6502fb-c64.prg
