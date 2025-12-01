@@ -15,9 +15,10 @@ main {
         platform.init()
         do {
             ubyte status=0
+            platform.set_screen_mode(platform.title_width)
             game.draw_splash()
-            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty],
-                                platform.grid_startx[game.difficulty], platform.grid_starty[game.difficulty])
+            platform.set_screen_mode(platform.grid_mode[game.difficulty])
+            game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty])
             game.draw_title()
             game.draw_scoreboard()
             game.draw_playboard()
@@ -26,6 +27,7 @@ main {
             game.draw_menu()
             status = game.play()
         } until status == 0
+        platform.cleanup()
         txt.cls()
         txt.color(game.board_fgcolor)
         txt.print("thanks for playing!\n")
@@ -36,9 +38,11 @@ main {
 }
 
 game {
-    ubyte bombs_total
-    ubyte bombs_found
-    ubyte bombs_left
+    alias bomb_array = platform.bomb_array
+    alias menu_offset = platform.init.menu_offset
+    uword bombs_total
+    uword bombs_found
+    uword bombs_left
     ubyte col_count
     ubyte row_count
     ubyte board_topx
@@ -47,31 +51,6 @@ game {
     ubyte row_current
     ubyte x
     ubyte y
-    ubyte[40] row0
-    ubyte[40] row1
-    ubyte[40] row2
-    ubyte[40] row3
-    ubyte[40] row4
-    ubyte[40] row5
-    ubyte[40] row6
-    ubyte[40] row7
-    ubyte[40] row8
-    ubyte[40] row9
-    ubyte[40] row10
-    ubyte[40] row11
-    ubyte[40] row12
-    ubyte[40] row13
-    ubyte[40] row14
-    ubyte[40] row15
-    ubyte[40] row16
-    ubyte[40] row17
-    ubyte[40] row18
-    ubyte[40] row19
-    ubyte[40] row20
-    ubyte[40] row21
-    ubyte[40] row22
-    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
-                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20, row21, row22]
     const ubyte board_upperleft = 176
     const ubyte board_upperright = 174
     const ubyte board_lowerleft = 173
@@ -103,16 +82,16 @@ game {
                                     cbm.COLOR_PINK]
     ubyte current_char
     ubyte cursor_char = sc:'x'
-    ubyte menu_offset = platform.screen_width / 2 - 10
     ubyte difficulty
+    uword uncovered
 
-   sub set_boardsize(ubyte columns, ubyte rows, ubyte startx, ubyte starty) {
+   sub set_boardsize(ubyte columns, ubyte rows) {
         ;sets the main board size variables
         ;board variables always include borders
         col_count = columns
         row_count = rows
-        board_topx = startx
-        board_topy = starty
+        board_topx = (platform.screen_width / 2) - (columns / 2)
+        board_topy = 3
     }
 
     sub draw_splash() {
@@ -128,7 +107,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v1.5         ")
+        txt.print("       v1.8         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
@@ -195,10 +174,12 @@ game {
         txt.rvs_off()
         txt.color(board_scorecolor)
         txt.plot(menu_offset,22)
-        txt.print("> difficulty? 1-3 <")
+        txt.print("> difficulty? 1-")
+        txt.print_ub(platform.max_difficulty)
+        txt.print(" <")
         do {
             difficulty = cbm.GETIN2()
-        } until difficulty >= 49 and difficulty <= 51
+        } until difficulty >= 49 and difficulty <= platform.max_difficulty + 48
         difficulty=difficulty - 49
     }
 
@@ -221,9 +202,9 @@ game {
         txt.color(board_scorecolor)
         txt.plot(menu_offset,board_topy - 1)
         txt.print("found: ")
-        txt.print_ub(bombs_found)
+        txt.print_uw(bombs_found)
         txt.print(" left: ")
-        txt.print_ub(bombs_left)
+        txt.print_uw(bombs_left)
         txt.print("  ")
     }
 
@@ -288,8 +269,8 @@ game {
         ubyte col_index
         ubyte row_index
         platform.seed()
-        for col_index in 0 to 39 {
-            for row_index in 0 to 22 {
+        for col_index in 0 to platform.screen_width -1 {
+            for row_index in 0 to platform.screen_height - 2 {
                 ;when screen array is within the board area
                 ;randomly pick a number in range, when value is 4 it is a bomb.
                 ;Otherwise fill rest with spaces
@@ -432,8 +413,15 @@ game {
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
-                    if under == 32      ;space or reverse space meaning everything around is not bomb
-                        uncover_around(col_current,row_current)
+                    if under == 32 {     ;space or reverse space meaning everything around is not bomb
+                        do {
+                            uncovered=0
+                            uncover_toborderrd()
+                            uncover_toborderlu()
+                            uncover_toborderdr()
+                            uncover_toborderul()
+                        } until uncovered == 0
+                    }
                     if under == 42 {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
@@ -451,13 +439,12 @@ game {
         ;reveals the bomb_array tile and also sends that back to the calling process for further processing
         ubyte under_char = 0
         ubyte temp_char = txt.getchr(board_topx+xf, board_topy+yf)
-        if temp_char == board_tile_covered or
-            temp_char == cursor_char or
-            temp_char == ' ' {
+        if temp_char == board_tile_covered or temp_char == cursor_char {
+            uncovered++
             under_char = get_value(board_topx+xf, board_topy+yf)
             txt.setchr(board_topx+xf, board_topy+yf, under_char)
             cursor_off(xf,yf)
-        }
+            }
         return under_char
     }
 
@@ -472,6 +459,50 @@ game {
         void uncover(xe+1,ye)
         void uncover(xe+1,ye+1)
 
+    }
+    
+    sub uncover_toborderrd() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for col_spc in (board_topx + 1) to (board_topx + col_count - 2) {
+            for row_spc in (board_topy + 1) to (board_topy + row_count - 2) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderdr() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for row_spc in (board_topy + 1) to (board_topy + row_count - 2) {
+            for col_spc in (board_topx + 1) to (board_topx + col_count - 2) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderlu() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for col_spc in (board_topx + col_count - 2) to (board_topx + 1)  {
+            for row_spc in (board_topy + row_count - 2) to (board_topy + 1) {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
+    }
+
+    sub uncover_toborderul() {
+        ubyte col_spc = 0
+        ubyte row_spc = 0
+        for row_spc in (board_topy + row_count - 2) to (board_topy + 1) {
+            for col_spc in (board_topx + col_count - 2) to (board_topx + 1)  {
+                if is_space(col_spc,row_spc) == 1
+                    uncover_around(col_spc-board_topx, row_spc-board_topy)
+            }
+        }
     }
 
     sub flag(ubyte xf, ubyte yf) -> ubyte {
@@ -565,6 +596,16 @@ game {
     sub is_bomb(ubyte col, ubyte row) -> ubyte {
         ;checks if a bomb exits in bomb_array at position
         if get_value(col,row) == board_tile_bomb
+            return 1
+        else
+            return 0
+    }
+
+    sub is_space(ubyte col, ubyte row) -> ubyte {
+        ;checks if a space exits in bomb_array at position
+        if txt.getchr(col,row) == cursor_char
+            txt.setchr(col,row,current_char)
+        if txt.getchr(col,row) == 32
             return 1
         else
             return 0

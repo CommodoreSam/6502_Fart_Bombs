@@ -31,10 +31,10 @@ platform {
     uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
                             row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
                             row21, row22, row23, row24]
-    ubyte max_difficulty = 5
-    ubyte[5] grid_width = [12,24,30,36,36]
-    ubyte[5] grid_height =[12,15,19,19,19]
-    ubyte[5] grid_density = [11,10,8,8,7] ;lower number means more bombs
+    ubyte max_difficulty = 7
+    ubyte[7] grid_width = [12,24,30,36,60,76,76]
+    ubyte[7] grid_height =[12,15,19,19,19,19,19]
+    ubyte[7] grid_density = [11,10,8,8,8,8,7]   ;lower number means more bombs
     ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
     ubyte restore_height = 0                    ; video mode to restore to on exit
@@ -42,37 +42,87 @@ platform {
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
 
-    sub cleanup() {
+    sub init() {
+        screen_width, screen_height = cbm.SCREEN()
+        ; adjust from zero relative
+        screen_width++
+        screen_height++
 
+        ;ubyte menu_offset = platform.screen_width / 2 - 10
+        ubyte menu_offset = title_width / 2 - 10
+        restore_width = screen_width
+        restore_height = screen_height
+        restore_bdcolor = mega65.EXTCOL
+        restore_bgcolor = mega65.BGCOL0
+        ;restore_color = cbm.COLOR  ; TODO: need to find this or read color ram.
+
+        ; set game colors
+        mega65.EXTCOL = game.border_color
+        mega65.BGCOL0 = game.board_bgcolor
+
+        ; change to 40x25 mode
+        ;set_screen_mode(40)
+
+    }
+
+    ; cleanup before exit, restoring video mode and/or colors.
+    sub cleanup() {
+        ; Restore initial screen size
+        if restore_width != 0 {
+            ; restore video mode
+            set_screen_mode(restore_width)
+        }
+        mega65.EXTCOL = restore_bdcolor
+        mega65.BGCOL0 = restore_bgcolor
+        ;txt.color(restore_color)
     }
 
     sub set_screen_mode(ubyte mode) {
+        when mode {
+            40 -> {
+                ; use "Escape + 4" to change screen size
+                txt.chrout(27)
+                txt.chrout('4')
+            }
 
+            80 -> {
+                ; use "Escape + 8" to change screen size
+                txt.chrout(27)
+                txt.chrout('8')
+            }
+            ; do nothing for invalid modes
+            else -> {
+                txt.print("BOGUS SCREEN MODE")
+                repeat {}
+            }
+        }
+        screen_width = mode
+        screen_height = 25
+        platform.init.menu_offset = screen_width / 2 - 10
     }
 
     sub get_screen_mode() -> ubyte, ubyte, ubyte {
-    return 0,0,0
-    }
-
-
-    sub init() {
-        ubyte menu_offset = platform.screen_width / 2 - 10
-        c64.EXTCOL = game.border_color
-        c64.BGCOL0 = game.board_bgcolor
+        return 0,0,0
     }
 
     bool last_timer = false
+    ubyte last_count = 0
     sub blink_timer() -> bool {
-        bool temp = ((cbm.TIME_LO & %00100000) == 0) as bool
+        bool temp = (mega65.RASTER >>7) as bool
+
         if temp != last_timer {
             last_timer = temp
+            last_count+=1
+        }
+        if last_count > 60 {
+            last_count = 0
             return true
         }
         return false
     }
 
     sub seed() {
-        math.rndseed(peekw($a1)+1,peekw($d012)+1)
+        math.rndseed(cbm.RDTIM16()+1,mega65.RASTER+1)
     }
 
     sub splash_back() {
@@ -81,14 +131,13 @@ platform {
         platform.seed()
         for scrc_index in 1 to (screen_width - 2) {
             for scrr_index in 1 to (screen_height - 2) {
-                if scrc_index <= 8 or scrc_index >= 31 {
+                if scrc_index <= (screen_width / 2 - 12) or scrc_index >= screen_width / 2 + 11 {
                     txt.setchr(scrc_index,scrr_index,102)
                     txt.setclr(scrc_index,scrr_index,cbm.COLOR_GREY)
                 }
             }
         }
     }
-
 }
 
 cbm {

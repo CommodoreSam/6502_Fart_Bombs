@@ -2,14 +2,62 @@ platform {
 
     ubyte screen_width = 40
     ubyte screen_height = 25
-    ubyte[3] grid_width = [12,24,36]
-    ubyte[3] grid_height =[12,15,19]
-    ubyte[3] grid_startx = [14,8,2]
-    ubyte[3] grid_starty = [3,3,3]
-    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
+    const ubyte title_width = 40
+    ubyte[40] row0
+    ubyte[40] row1
+    ubyte[40] row2
+    ubyte[40] row3
+    ubyte[40] row4
+    ubyte[40] row5
+    ubyte[40] row6
+    ubyte[40] row7
+    ubyte[40] row8
+    ubyte[40] row9
+    ubyte[40] row10
+    ubyte[40] row11
+    ubyte[40] row12
+    ubyte[40] row13
+    ubyte[40] row14
+    ubyte[40] row15
+    ubyte[40] row16
+    ubyte[40] row17
+    ubyte[40] row18
+    ubyte[40] row19
+    ubyte[40] row20
+    ubyte[40] row21
+    ubyte[40] row22
+    ubyte[40] row23
+    ubyte[40] row24
+    uword[25] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
+                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
+                            row21, row22, row23, row24]
+    ubyte max_difficulty = 5
+    ubyte[5] grid_width = [12,24,30,36,36]
+    ubyte[5] grid_height =[12,15,19,19,19]
+    ubyte[5] grid_density = [11,10,8,8,7] ;lower number means more bombs
+    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte restore_width = 0                     ; video mode to restore to on exit
+    ubyte restore_height = 0                    ; video mode to restore to on exit
+    ubyte restore_bdcolor = 0                   ; save border color
+    ubyte restore_bgcolor = 0                   ; save background color
+    ubyte restore_color = 0                     ; save text color color
+
+    sub cleanup() {
+
+    }
+
+    sub set_screen_mode(ubyte mode) {
+
+    }
+
+    sub get_screen_mode() -> ubyte, ubyte, ubyte {
+    return 0,0,0
+    }
+
 
    sub init() {
-    }
+    ubyte menu_offset = platform.screen_width / 2 - 10
+   }
 
     bool last_timer = false
     sub blink_timer() -> bool {

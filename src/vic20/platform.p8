@@ -4,13 +4,60 @@ platform {
 
     ubyte screen_width = txt.DEFAULT_WIDTH
     ubyte screen_height = txt.DEFAULT_HEIGHT
-    ubyte[3] grid_width = [12,18,22]
-    ubyte[3] grid_height =[12,16,16]
-    ubyte[3] grid_startx = [4,2,0]
-    ubyte[3] grid_starty = [3,3,3]
-    ubyte[3] grid_density = [11,10,9] ;lower number means more bombs
+    const ubyte title_width = 40
+    ubyte[22] row0
+    ubyte[22] row1
+    ubyte[22] row2
+    ubyte[22] row3
+    ubyte[22] row4
+    ubyte[22] row5
+    ubyte[22] row6
+    ubyte[22] row7
+    ubyte[22] row8
+    ubyte[22] row9
+    ubyte[22] row10
+    ubyte[22] row11
+    ubyte[22] row12
+    ubyte[22] row13
+    ubyte[22] row14
+    ubyte[22] row15
+    ubyte[22] row16
+    ubyte[22] row17
+    ubyte[22] row18
+    ubyte[22] row19
+    ubyte[22] row20
+    ubyte[22] row21
+    ubyte[22] row22
+    uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
+                            row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
+                            row21, row22]
+    ubyte max_difficulty = 5
+    ubyte[5] grid_width = [12,18,22,22,22]
+    ubyte[5] grid_height =[12,16,16,16,16]
+    ubyte[5] grid_density = [11,10,9,8,7] ;lower number means more bombs
+    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte restore_width = 0                     ; video mode to restore to on exit
+    ubyte restore_height = 0                    ; video mode to restore to on exit
+    ubyte restore_bdcolor = 0                   ; save border color
+    ubyte restore_bgcolor = 0                   ; save background color
+    ubyte restore_color = 0                     ; save text color color
+
+
+    sub cleanup() {
+
+    }
+
+    sub set_screen_mode(ubyte mode) {
+
+    }
+
+    sub get_screen_mode() -> ubyte, ubyte, ubyte {
+    return 0,0,0
+    }
+
 
     sub init() {
+        ubyte menu_offset = platform.screen_width / 2 - 10
         cbm.bdcol(game.border_color)
         cbm.bgcol(game.board_bgcolor)
     }
