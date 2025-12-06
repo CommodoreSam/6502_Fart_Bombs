@@ -153,6 +153,57 @@ platform {
 
 }
 
+game {
+%option merge
+    alias bomb_array = platform.bomb_array
+    alias menu_offset = platform.init.menu_offset
+    uword bombs_total
+    uword bombs_found
+    uword bombs_left
+    ubyte col_count
+    ubyte row_count
+    ubyte board_topx
+    ubyte board_topy
+    ubyte col_current
+    ubyte row_current
+    ubyte x
+    ubyte y
+    const ubyte board_upperleft = 176
+    const ubyte board_upperright = 174
+    const ubyte board_lowerleft = 173
+    const ubyte board_lowerright = 189
+    const ubyte board_upperline = 192
+    const ubyte board_lowerline = 192
+    const ubyte board_leftline = 221
+    const ubyte board_rightline = 221
+    const ubyte board_tile_covered = 250
+    const ubyte board_tile_revcovered = 186
+    const ubyte board_tile_flag = 33
+    const ubyte board_tile_bomb = 42
+    const ubyte border_color = cbm.COLOR_BLUE
+    const ubyte board_bgcolor = cbm.COLOR_BLACK
+    const ubyte board_fgcolor = cbm.COLOR_YELLOW
+    const ubyte board_tile_color = cbm.COLOR_YELLOW
+    const ubyte board_scorecolor = cbm.COLOR_GREEN
+    const ubyte board_tile_flagcolor = cbm.COLOR_RED
+    const ubyte board_tile_bombcolor = cbm.COLOR_RED
+    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
+    ubyte[] board_tile_num_color = [board_bgcolor,
+                                    cbm.COLOR_WHITE,
+                                    cbm.COLOR_GREEN,
+                                    cbm.COLOR_PURPLE,
+                                    cbm.COLOR_CYAN,
+                                    cbm.COLOR_YELLOW,
+                                    cbm.COLOR_BLUE,
+                                    cbm.COLOR_LIGHT_BLUE,
+                                    cbm.COLOR_PINK]
+    ubyte current_char
+    ubyte cursor_char = sc:'x'
+    ubyte difficulty
+    uword uncovered
+}
+
+
 cbm {
 %option merge
 
