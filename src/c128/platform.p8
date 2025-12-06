@@ -89,6 +89,34 @@ platform {
         }
     }
 
+    sub sound_start() {
+
+    }
+
+    sub sound_clear() {
+
+    }
+
+    sub sound_flag() {
+
+    }
+
+    sub sound_small_bomb() {
+
+    }
+
+    sub sound_large_bomb() {
+
+    }
+
+    sub sound_lost() {
+
+    }
+
+    sub sound_won() {
+
+    }
+
 }
 
 game {

@@ -365,6 +365,7 @@ game {
                     }
                 }
                 ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
+                    platform.sound_clear()
                     ubyte under = uncover(col_current,row_current)
                     cursor_on(col_current,row_current)
                     if under == 32 {     ;space or reverse space meaning everything around is not bomb
@@ -377,6 +378,7 @@ game {
                         } until uncovered == 0
                     }
                     if under == 42 {    ;you hit a bomb dummy
+                        platform.sound_lost()
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1

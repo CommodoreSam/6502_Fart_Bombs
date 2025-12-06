@@ -88,6 +88,66 @@ platform {
             }
         }
     }
+
+
+    sub sound_mute() {
+        c64.MVOL = 0
+    }
+
+    sub sound_start() {
+
+    }
+
+    sub sound_clear() {
+        c64.MVOL = 5
+        c64.AD1 = %00100010
+        c64.SR1 = %00000000
+        c64.FREQ1 = 15600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+        sys.wait(10)
+        sound_mute()
+    }
+
+    sub sound_flag() {
+        c64.MVOL = 15
+        c64.AD1 = %01100110
+        c64.SR1 = %00000000
+        c64.FREQ1 = 1600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+        sys.wait(10)
+        sound_mute()
+    }
+
+    sub sound_small_bomb() {
+        c64.MVOL = 10
+        c64.AD1 = %01100110
+        c64.SR1 = %00000000
+        c64.FREQ1 = 1600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+    }
+
+    sub sound_large_bomb() {
+        c64.MVOL = 15
+        c64.AD1 = %01101010
+        c64.SR1 = %00000000
+        c64.FREQ1 = 2600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+    }
+
+    sub sound_lost() {
+        sound_large_bomb()
+        sys.wait(70)
+        sound_mute()
+    }
+
+    sub sound_won() {
+
+    }
+
 }
 
 game {
