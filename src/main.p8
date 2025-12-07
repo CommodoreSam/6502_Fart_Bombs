@@ -495,7 +495,7 @@ game {
         if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
             txt.setchr(board_topx+xf,board_topy+yf,current_char)
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
-        if testchr == board_tile_flag ^ 128 {
+        if testchr & 127 == board_tile_flag {
             txt.plot(board_topx+xf, board_topy+yf)
             txt.color(board_tile_flagcolor)
             txt.rvs_on()
@@ -531,7 +531,7 @@ game {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ubyte isit = is_bomb(col_index,row_index)
                 if isit == 1 {
-                    if txt.getchr(col_index, row_index) == board_tile_flag ^ 128 {
+                    if txt.getchr(col_index, row_index) & 127 == board_tile_flag {
                         bomb_matches++
                     }
                 }
