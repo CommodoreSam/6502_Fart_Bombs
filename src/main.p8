@@ -378,7 +378,6 @@ game {
                         } until uncovered == 0
                     }
                     if under == 42 {    ;you hit a bomb dummy
-                        platform.sound_lost()
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
@@ -467,6 +466,7 @@ game {
         ;deflag only if a flag
         ;when at bombs left at 0 check to see if all actually found
         ubyte complete='n'
+        platform.sound_flag()
         if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
             txt.setchr(board_topx+xf,board_topy+yf,current_char)
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
@@ -526,12 +526,18 @@ game {
             for row_index in (board_topy + 1) to (board_topy + row_count - 2) {
                 ubyte isit = is_bomb (col_index,row_index)
                 if isit == 1 {
+                    platform.sound_small_bomb()
+                    sys.wait(math.randrange(6))
                     txt.plot(col_index,row_index)
                     txt.color(board_tile_bombcolor)
                     txt.chrout(board_tile_bomb)
                 }
             }
         }
+        sys.wait(3)
+        platform.sound_large_bomb()
+        sys.wait(70)
+        platform.sound_mute()
     }
 
     sub set_value(ubyte col, ubyte row, ubyte value) {
@@ -620,6 +626,8 @@ game {
                 show_bombs()
             }
             'w' -> {
+                platform.sound_won()
+                platform.sound_mute()
                 txt.plot(menu_offset,board_topy + row_count + 1)
                 txt.print("awesome, you won!!!")
                 txt.plot(menu_offset,board_topy + row_count + 2)

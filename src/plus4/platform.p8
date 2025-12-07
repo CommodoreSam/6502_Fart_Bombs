@@ -89,6 +89,10 @@ platform {
         }
     }
 
+    sub sound_mute() {
+
+    }
+
     sub sound_start() {
 
     }

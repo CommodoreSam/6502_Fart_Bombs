@@ -79,6 +79,10 @@ platform {
     sub splash_back() {
     }
 
+    sub sound_mute() {
+
+    }
+
     sub sound_start() {
 
     }
