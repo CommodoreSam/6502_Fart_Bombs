@@ -41,6 +41,8 @@ platform {
     ubyte restore_bdcolor = 0                   ; save border color
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
+    bool sound_on
+    bool first_time = true
 
     sub cleanup() {
 
@@ -89,6 +91,19 @@ platform {
         }
     }
 
+
+    sub sound_init() {
+        if first_time
+            sound_on = true
+        first_time=false
+    }
+
+    sub sound_toggle() {
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
+    }
 
     sub sound_mute() {
         c64.MVOL = 0

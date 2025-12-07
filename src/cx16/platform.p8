@@ -79,6 +79,7 @@ platform {
     ubyte restore_bdcolor = 0                   ; save border color
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
+    bool sound_on
 
     sub cleanup() {
         ; Restore initial screen size
@@ -149,6 +150,14 @@ platform {
                 }
             }
         }
+    }
+
+    sub sound_init() {
+        sound_on = false
+    }
+
+    sub sound_toggle() {
+
     }
 
     sub sound_mute() {
