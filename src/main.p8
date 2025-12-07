@@ -553,7 +553,6 @@ game {
                 if isit == 1 {
                     if platform.sound_on {
                         platform.sound_small_bomb()
-                        sys.wait(math.randrange(4))
                     }
                     txt.plot(col_index,row_index)
                     txt.color(board_tile_bombcolor)

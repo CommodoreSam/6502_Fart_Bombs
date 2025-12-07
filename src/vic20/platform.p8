@@ -42,7 +42,11 @@ platform {
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
     bool sound_on
-
+    const uword voice1 = 36874
+    const uword voice2 = 36875
+    const uword voice3 = 36876
+    const uword voice4 = 36877
+    const uword volume = 36878
 
     sub cleanup() {
 
@@ -81,15 +85,22 @@ platform {
     }
 
     sub sound_init() {
-        sound_on = false
+        sound_on = true
     }
 
     sub sound_toggle() {
-
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
     }
 
     sub sound_mute() {
-
+        @(volume)=0
+        @(voice1)=0
+        @(voice2)=0
+        @(voice3)=0
+        @(voice4)=0
     }
 
     sub sound_start() {
@@ -97,23 +108,37 @@ platform {
     }
 
     sub sound_clear() {
-
+        ubyte value
+        @(volume)=5
+        for value in 1 to 140
+            @(voice4)=value
+            sys.wait(5)
+        sound_mute()
     }
 
     sub sound_flag() {
-
+        ubyte value
+        @(volume)=5
+        for value in 150 to 160
+            @(voice3)=value
+            sys.wait(2)
+        sound_mute()
     }
 
     sub sound_small_bomb() {
-
+        @(volume)=8
+        @(voice3)=100
+        sys.wait(1)
+        @(voice3)=200
+        sys.wait(1)
+        @(voice3)=0
     }
 
     sub sound_large_bomb() {
-
-    }
-
-    sub sound_lost() {
-
+        ubyte value
+        @(volume)=15
+        for value in 250 to 140 step -1
+            @(voice4)=value
     }
 
     sub sound_won() {

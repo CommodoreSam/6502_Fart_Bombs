@@ -142,6 +142,7 @@ platform {
         c64.FREQ1 = 1600
         c64.CR1 = %10000000
         c64.CR1 = %10000001
+        sys.wait(math.randrange(4))
     }
 
     sub sound_large_bomb() {
