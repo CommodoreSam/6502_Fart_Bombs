@@ -235,11 +235,11 @@ game {
         game.draw_scoreboard()
     }
 
-    sub bomb_rand() -> ubyte {
+    sub bomb_rand() -> uword {
         ;creates bombs
         ;iterates through the hidden bomb_array
         ;and randomly assigns a space or bomb tile
-        ubyte total=0
+        uword total=0
         ubyte col_index
         ubyte row_index
         platform.seed()
@@ -254,6 +254,8 @@ game {
                     row_index >= (board_topy + 1) and
                     row_index <= (board_topy + row_count - 2) {
                     if math.randrange(platform.grid_density[difficulty]) == 4 {
+                        if (col_index == board_topx + 1) and (row_index == board_topy + 1)
+                            continue
                         set_value(col_index,row_index,board_tile_bomb)
                         total++
                     }
