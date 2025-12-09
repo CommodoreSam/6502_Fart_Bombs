@@ -42,6 +42,7 @@ platform {
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
     bool sound_on
+    bool first_time = true
 
     sub init() {
         screen_width, screen_height = cbm.SCREEN()
@@ -53,13 +54,13 @@ platform {
         ubyte menu_offset = title_width / 2 - 10
         restore_width = screen_width
         restore_height = screen_height
-        restore_bdcolor = mega65.EXTCOL
-        restore_bgcolor = mega65.BGCOL0
+        restore_bdcolor = c64.EXTCOL
+        restore_bgcolor = c64.BGCOL0
         ;restore_color = cbm.COLOR  ; TODO: need to find this or read color ram.
 
         ; set game colors
-        mega65.EXTCOL = game.border_color
-        mega65.BGCOL0 = game.board_bgcolor
+        c64.EXTCOL = game.border_color
+        c64.BGCOL0 = game.board_bgcolor
 
         ; change to 40x25 mode
         ;set_screen_mode(40)
@@ -73,8 +74,8 @@ platform {
             ; restore video mode
             set_screen_mode(restore_width)
         }
-        mega65.EXTCOL = restore_bdcolor
-        mega65.BGCOL0 = restore_bgcolor
+        c64.EXTCOL = restore_bdcolor
+        c64.BGCOL0 = restore_bgcolor
         ;txt.color(restore_color)
     }
 
@@ -109,7 +110,7 @@ platform {
     bool last_timer = false
     ubyte last_count = 0
     sub blink_timer() -> bool {
-        bool temp = (mega65.RASTER >>7) as bool
+        bool temp = (c64.RASTER >>7) as bool
 
         if temp != last_timer {
             last_timer = temp
@@ -123,7 +124,7 @@ platform {
     }
 
     sub seed() {
-        math.rndseed(cbm.RDTIM16()+1,mega65.RASTER+1)
+        math.rndseed(cbm.RDTIM16()+1,c64.RASTER+1)
     }
 
     sub splash_back() {
@@ -140,16 +141,22 @@ platform {
         }
     }
 
+
     sub sound_init() {
-        sound_on = false
+        if first_time
+            sound_on = true
+        first_time=false
     }
 
     sub sound_toggle() {
-
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
     }
 
     sub sound_mute() {
-
+        c64.MVOL = 0
     }
 
     sub sound_start() {
@@ -157,29 +164,86 @@ platform {
     }
 
     sub sound_clear() {
-
+        c64.MVOL = 5
+        c64.AD1 = %00100010
+        c64.SR1 = %00000000
+        c64.FREQ1 = 15600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+        sys.wait(10)
+        sound_mute()
     }
 
     sub sound_flag() {
-
+        c64.MVOL = 8
+        c64.AD1 = %01010111
+        c64.SR1 = %00000000
+        c64.FREQ1 = 5500
+        c64.CR1 = %00010000
+        c64.CR1 = %00010001
+        sys.wait(10)
+        sound_mute()
     }
 
     sub sound_small_bomb() {
-
+        c64.MVOL = 10
+        c64.AD1 = %01100110
+        c64.SR1 = %00000000
+        c64.FREQ1 = 1600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
+        sys.wait(math.randrange(4))
     }
 
     sub sound_large_bomb() {
-
-    }
-
-    sub sound_lost() {
-
+        c64.MVOL = 15
+        c64.AD1 = %01101010
+        c64.SR1 = %00000000
+        c64.FREQ1 = 2600
+        c64.CR1 = %10000000
+        c64.CR1 = %10000001
     }
 
     sub sound_won() {
+        const ubyte waveform = %0001       ; triangle
+        c64.AD1 = %00011010
+        c64.SR1 = %00000000
+        c64.AD2 = %00011010
+        c64.SR2 = %00000000
+        c64.MVOL = 15
+        uword note
+        for note in notes {
+            ubyte note1 = lsb(note)
+            ubyte note2 = msb(note)
+            c64.FREQ1 = music_freq_table[note1]    ; set lo+hi freq of voice 1
+            c64.FREQ2 = music_freq_table[note2]    ; set lo+hi freq of voice 2
 
+            ; retrigger voice 1 and 2 ADSR
+            c64.CR1 = waveform <<4 | 0
+            c64.CR2 = waveform <<4 | 0
+            c64.CR1 = waveform <<4 | 1
+            c64.CR2 = waveform <<4 | 1
+            sys.wait(8)
+        }
     }
 
+    uword[] notes = [
+        $1622, $1d26, $2229, $252e, $1424, $1f27, $2029, $2730,
+        $122a, $122c, $1e2e, $1231, $202c, $3337, $212d, $3135,
+        $1622, $162e, $161d, $1624, $1420, $1430, $1424, $1420,
+        $1622, $162e, $161d, $1624, $1e2a, $1e3a, $1e2e, $1e2a,
+        $142c, $142c, $141b, $1422, $1c28, $1c38, $1c2c, $1c28,
+        $111d, $292d, $111f, $292e, $0f27, $0f27, $1633, $1627
+    ]
+
+
+    uword[] music_freq_table = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        732, 778, 826, 876, 928, 978, 1042, 1100, 1170, 1238, 1312, 1390, 1464, 1556,
+        1652, 1752, 1856, 1956, 2084, 2200, 2340, 2476, 2624, 2780, 2928, 3112, 3304,
+        3504, 3712, 3912, 4168, 4400, 4680, 4952, 5248, 5560, 5856, 6224, 6608, 7008,
+        7424, 7824, 8336, 8800, 9360, 9904, 10496, 11120, 11712
+    ]
 
 }
 
@@ -232,7 +296,6 @@ game {
     ubyte difficulty
     uword uncovered
 }
-
 
 cbm {
 %option merge
