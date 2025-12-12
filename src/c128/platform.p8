@@ -43,6 +43,7 @@ platform {
     ubyte restore_color = 0                     ; save text color color
     bool sound_on
     bool first_time = true
+    ß
 
     sub cleanup() {
 
