@@ -44,6 +44,7 @@ PCCARGS128=-srcdirs src:src$(SEP)c128 -asmlist -target c128 -out build
 PCCARGSVIC=-srcdirs src:src$(SEP)vic20 -asmlist -target config$(SEP)vic20plus8.properties -out build
 PCCARGS264=-srcdirs src:src$(SEP)plus4 -asmlist -target config$(SEP)plus4.properties -out build
 PCCARGSM65=-srcdirs src:src$(SEP)mega65 -asmlist -target config$(SEP)mega65.properties -out build
+PCCARGSF256=-srcdirs src:src$(SEP)f256 -asmlist -target config$(SEP)f256.properties -out build
 
 PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg build/6502fb-mega65.prg
 
@@ -82,6 +83,10 @@ build/6502fb-mega65.prg: $(SRCS) src/mega65/platform.p8
 	$(PCC) $(PCCARGSM65) $<
 	mv build/main.prg build/6502fb-mega65.prg
 
+build/6502fb-f256.pgz: src/main_other.p8 src/main.p8 src/f256/platform.p8
+	$(PCC) $(PCCARGSF256) $<
+	mv build/main_other.bin build/6502fb-f256.pgz
+
 clean:
 	$(RM) build$(SEP)*
 
@@ -109,6 +114,10 @@ emu-plus4:	build/6502fb-plus4.prg
 
 emu-mega65:	build/6502fb-mega65.prg
 	xmega65 -besure -videostd 1 -prgmode 65 -prg build/6502fb-mega65.prg
+
+emu-f256:	build/6502fb-f256.pgz
+	env MTOOLSRC=../f256/mtools.rc mcopy -n -o build/6502fb-f256.pgz p:6502fb.pgz
+	(cd ../f256 && ./f256 f256k -sound none -window -resolution 1440x900 -harddisk ./sdcard.img)
 
 
 #

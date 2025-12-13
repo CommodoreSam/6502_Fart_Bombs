@@ -72,13 +72,14 @@ platform {
     ubyte max_difficulty = 4
     ubyte[7] grid_width = [12,22,30,36,60,76,76]
     ubyte[7] grid_height =[12,20,24,24,50,50,50]
-    ubyte[7] grid_density = [11,10,9,8,8,8,7] ;lower number means more bombs
+    ubyte[7] grid_density = [11,10,9,8,10,10,9] ;lower number means more bombs
     ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
     ubyte restore_height = 0                    ; video mode to restore to on exit
     ubyte restore_bdcolor = 0                   ; save border color
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
+    bool sound_on
 
     sub cleanup() {
         ; Restore initial screen size
@@ -151,7 +152,99 @@ platform {
         }
     }
 
+    sub sound_init() {
+        sound_on = false
+    }
+
+    sub sound_toggle() {
+
+    }
+
+    sub sound_mute() {
+
+    }
+
+    sub sound_start() {
+
+    }
+
+    sub sound_clear() {
+
+    }
+
+    sub sound_flag() {
+
+    }
+
+    sub sound_small_bomb() {
+
+    }
+
+    sub sound_large_bomb() {
+
+    }
+
+    sub sound_lost() {
+
+    }
+
+    sub sound_won() {
+
+    }
+
+
 }
+
+game {
+%option merge
+    alias bomb_array = platform.bomb_array
+    alias menu_offset = platform.init.menu_offset
+    uword bombs_total
+    uword bombs_found
+    uword bombs_left
+    ubyte col_count
+    ubyte row_count
+    ubyte board_topx
+    ubyte board_topy
+    ubyte col_current
+    ubyte row_current
+    ubyte x
+    ubyte y
+    const ubyte board_upperleft = 176
+    const ubyte board_upperright = 174
+    const ubyte board_lowerleft = 173
+    const ubyte board_lowerright = 189
+    const ubyte board_upperline = 192
+    const ubyte board_lowerline = 192
+    const ubyte board_leftline = 221
+    const ubyte board_rightline = 221
+    const ubyte board_tile_covered = 250
+    const ubyte board_tile_revcovered = 186
+    const ubyte board_tile_flag = 33
+    const ubyte board_tile_bomb = 42
+    const ubyte border_color = cbm.COLOR_BLUE
+    const ubyte board_bgcolor = cbm.COLOR_BLACK
+    const ubyte board_fgcolor = cbm.COLOR_YELLOW
+    const ubyte board_tile_color = cbm.COLOR_YELLOW
+    const ubyte board_scorecolor = cbm.COLOR_GREEN
+    const ubyte board_tile_flagcolor = cbm.COLOR_RED
+    const ubyte board_tile_bombcolor = cbm.COLOR_RED
+    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
+    ubyte[] board_tile_num_color = [board_bgcolor,
+                                    cbm.COLOR_WHITE,
+                                    cbm.COLOR_GREEN,
+                                    cbm.COLOR_PURPLE,
+                                    cbm.COLOR_CYAN,
+                                    cbm.COLOR_YELLOW,
+                                    cbm.COLOR_BLUE,
+                                    cbm.COLOR_LIGHT_BLUE,
+                                    cbm.COLOR_PINK]
+    ubyte current_char
+    ubyte cursor_char = sc:'x'
+    ubyte difficulty
+    uword uncovered
+}
+
 
 cbm {
 %option merge

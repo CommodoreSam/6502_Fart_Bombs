@@ -31,17 +31,22 @@ platform {
     uword[23] bomb_array = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9, row10,
                             row11, row12, row13, row14, row15, row16, row17, row18, row19, row20,
                             row21, row22]
-    ubyte max_difficulty = 5
-    ubyte[5] grid_width = [12,18,22,22,22]
-    ubyte[5] grid_height =[12,16,16,16,16]
-    ubyte[5] grid_density = [11,10,9,8,7] ;lower number means more bombs
-    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte max_difficulty = 6
+    ubyte[] grid_width = [12,18,22,22,22,22]
+    ubyte[] grid_height =[12,16,16,16,16,16]
+    ubyte[] grid_density = [10,9,8,7,6,5] ;lower number means more bombs
+    ubyte[] grid_mode = [40,40,40,40,40,40] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
     ubyte restore_height = 0                    ; video mode to restore to on exit
     ubyte restore_bdcolor = 0                   ; save border color
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
-
+    bool sound_on
+    const uword voice1 = 36874
+    const uword voice2 = 36875
+    const uword voice3 = 36876
+    const uword voice4 = 36877
+    const uword volume = 36878
 
     sub cleanup() {
 
@@ -79,7 +84,135 @@ platform {
     sub splash_back() {
     }
 
+    sub sound_init() {
+        sound_on = true
+    }
+
+    sub sound_toggle() {
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
+    }
+
+    sub sound_mute() {
+        @(volume)=0
+        @(voice1)=0
+        @(voice2)=0
+        @(voice3)=0
+        @(voice4)=0
+    }
+
+    sub sound_start() {
+
+    }
+
+    sub sound_clear() {
+        ubyte value
+        @(volume)=5
+        for value in 1 to 140
+            @(voice4)=value
+            sys.wait(5)
+        sound_mute()
+    }
+
+    sub sound_flag() {
+        ubyte value
+        @(volume)=5
+        for value in 150 to 160
+            @(voice3)=value
+            sys.wait(2)
+        sound_mute()
+    }
+
+    sub sound_small_bomb() {
+        @(volume)=8
+        @(voice3)=100
+        sys.wait(1)
+        @(voice3)=200
+        sys.wait(1)
+        @(voice3)=0
+    }
+
+    sub sound_large_bomb() {
+        ubyte value
+        @(volume)=15
+        for value in 250 to 140 step -1
+            @(voice4)=value
+    }
+
+    sub sound_won() {
+        @(volume)=15
+        ubyte[] notes_array = [232,10,225,10,227,10,228,10,230,10,232,10,232,20,
+                               230,10,228,10,227,10,225,10,223,10,225,10,225,20,
+                               232,10,225,10,227,10,228,10,230,10,232,10,232,20,
+                               230,10,228,10,227,10,225,10,223,10,225,10,223,30,
+                               225,10,227,10,228,10,230,10,232,20,
+                               230,10,228,10,227,10,225,20,
+                               223,10,225,10,227,10,228,10,230,10,232,10,230,10,228,10,
+                               227,20,225,10,223,20,
+                               232,10,232,10,230,10,228,10,227,10,225,10,223,20,
+                               225,10,227,10,228,10,230,10,232,30,
+                               230,10,228,10,227,10,225,10,223,10,225,10,223,40]
+        ubyte note
+        for note in 0 to ((sizeof(notes_array)/2) - 1) step 2 {
+            @(voice2)=notes_array[note]
+            sys.wait(notes_array[note+1])
+        }
+    }
+
 }
+
+game {
+%option merge
+    alias bomb_array = platform.bomb_array
+    alias menu_offset = platform.init.menu_offset
+    uword bombs_total
+    uword bombs_found
+    uword bombs_left
+    ubyte col_count
+    ubyte row_count
+    ubyte board_topx
+    ubyte board_topy
+    ubyte col_current
+    ubyte row_current
+    ubyte x
+    ubyte y
+    const ubyte board_upperleft = 176
+    const ubyte board_upperright = 174
+    const ubyte board_lowerleft = 173
+    const ubyte board_lowerright = 189
+    const ubyte board_upperline = 192
+    const ubyte board_lowerline = 192
+    const ubyte board_leftline = 221
+    const ubyte board_rightline = 221
+    const ubyte board_tile_covered = 250
+    const ubyte board_tile_revcovered = 186
+    const ubyte board_tile_flag = 33
+    const ubyte board_tile_bomb = 42
+    const ubyte border_color = cbm.COLOR_BLUE
+    const ubyte board_bgcolor = cbm.COLOR_BLACK
+    const ubyte board_fgcolor = cbm.COLOR_YELLOW
+    const ubyte board_tile_color = cbm.COLOR_YELLOW
+    const ubyte board_scorecolor = cbm.COLOR_GREEN
+    const ubyte board_tile_flagcolor = cbm.COLOR_RED
+    const ubyte board_tile_bombcolor = cbm.COLOR_RED
+    ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
+    ubyte[] board_tile_num_color = [board_bgcolor,
+                                    cbm.COLOR_WHITE,
+                                    cbm.COLOR_GREEN,
+                                    cbm.COLOR_PURPLE,
+                                    cbm.COLOR_CYAN,
+                                    cbm.COLOR_YELLOW,
+                                    cbm.COLOR_BLUE,
+                                    cbm.COLOR_LIGHT_BLUE,
+                                    cbm.COLOR_PINK]
+    ubyte current_char
+    ubyte cursor_char = sc:'x'
+    ubyte difficulty
+    uword uncovered
+}
+
 
 cbm {
 %option merge
