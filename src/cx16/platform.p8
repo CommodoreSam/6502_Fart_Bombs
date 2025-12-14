@@ -208,17 +208,15 @@ platform {
         cx16.enable_irq_handlers(true)
         cx16.set_vsync_irq_handler(&psg.envelopes_irq)
 
-        repeat {
-            uword note
-            for note in notes {
-                ubyte note0 = lsb(note)
-                ubyte note1 = msb(note)
-                psg.freq(0, vera_freqs[note0])
-                psg.freq(1, vera_freqs[note1])
-                psg.envelope(0, 63, 255, 0, 6)
-                psg.envelope(1, 63, 255, 0, 6)
-                sys.wait(10)
-            }
+        uword note
+        for note in notes {
+            ubyte note0 = lsb(note)
+            ubyte note1 = msb(note)
+            psg.freq(0, vera_freqs[note0])
+            psg.freq(1, vera_freqs[note1])
+            psg.envelope(0, 63, 255, 0, 6)
+            psg.envelope(1, 63, 255, 0, 6)
+            sys.wait(10)
         }
 
         psg.silent()
@@ -235,9 +233,6 @@ platform {
         $122a, $122c, $1e2e, $1231, $202c, $3337, $212d, $3135,
         $1622, $162e, $161d, $1624, $1420, $1430, $1424, $1420,
         $1622, $162e, $161d, $1624, $1e2a, $1e3a, $1e2e, $1e2a,
-        $142c, $142c, $141b, $1422, $1c28, $1c38, $1c2c, $1c28,
-        $111d, $292d, $111f, $292e, $0f27, $0f27, $1633, $1627,
-        $162e, $162e, $162e, $162e, $222e, $222e, $162e, $162e,
         $142e, $142e, $142e, $142e, $202e, $202e, $142e, $142e]
 
     uword[] vera_freqs = [
