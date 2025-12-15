@@ -178,13 +178,16 @@ platform {
         psg.freq(0, 15600)
         psg.voice(0, psg.LEFT | psg.RIGHT, 32, psg.NOISE, 0)
         psg.envelope(0, 32, 200, 1, 100)
+        sys.wait(5)
+        sound_mute()
     }
 
     sub sound_flag() {
         psg.freq(2, 1500)
         psg.voice(2, psg.LEFT | psg.RIGHT, 32, psg.TRIANGLE, 0)
         psg.envelope(2, 40, 100, 6, 10)
-
+        sys.wait(5)
+        sound_mute()
     }
 
     sub sound_small_bomb() {
