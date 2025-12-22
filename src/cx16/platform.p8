@@ -202,6 +202,7 @@ platform {
         psg.freq(4, 2500)
         psg.voice(4, psg.LEFT | psg.RIGHT, 63, psg.NOISE, 0)
         psg.envelope(4, 63, 100, 20, 10)
+        sys.wait(70)
     }
 
     sub sound_won() {

@@ -62,7 +62,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v2.1         ")
+        txt.print("       v2.2         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
@@ -565,7 +565,6 @@ game {
         if platform.sound_on {
             sys.wait(3)
             platform.sound_large_bomb()
-            sys.wait(70)
             platform.sound_mute()
         }
     }

@@ -139,6 +139,7 @@ platform {
         @(volume)=15
         for value in 250 to 140 step -1
             @(voice4)=value
+        sys.wait(70)
     }
 
     sub sound_won() {

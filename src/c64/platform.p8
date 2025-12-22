@@ -152,6 +152,7 @@ platform {
         c64.FREQ1 = 2600
         c64.CR1 = %10000000
         c64.CR1 = %10000001
+        sys.wait(70)
     }
 
     sub sound_won() {
