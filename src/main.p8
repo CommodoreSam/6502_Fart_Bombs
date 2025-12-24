@@ -144,6 +144,7 @@ game {
             txt.rvs_on()
             txt.plot(menu_offset+9,19)
             if platform.sound_on {
+;                if difficulty != 0 txt.print_ub(difficulty)
                 txt.print("on")
                 txt.rvs_off()
                 txt.print(" ")

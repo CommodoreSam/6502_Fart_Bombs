@@ -164,24 +164,24 @@ platform {
     }
 
     sub sound_clear() {
-        c64.MVOL = 5
+        c64.MVOL = 15
         c64.AD1 = %00100010
         c64.SR1 = %00000000
         c64.FREQ1 = 15600
         c64.CR1 = %10000000
         c64.CR1 = %10000001
-        sys.wait(10)
+        sys.wait(15)
         sound_mute()
     }
 
     sub sound_flag() {
-        c64.MVOL = 8
+        c64.MVOL = 15
         c64.AD1 = %01010111
         c64.SR1 = %00000000
         c64.FREQ1 = 5500
         c64.CR1 = %00010000
         c64.CR1 = %00010001
-        sys.wait(10)
+        sys.wait(15)
         sound_mute()
     }
 
@@ -192,7 +192,7 @@ platform {
         c64.FREQ1 = 1600
         c64.CR1 = %10000000
         c64.CR1 = %10000001
-        sys.wait(math.randrange(4))
+        sys.wait(math.randrange(4)+2)
     }
 
     sub sound_large_bomb() {
