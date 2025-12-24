@@ -1,3 +1,5 @@
+%import psg
+
 platform {
 
     ubyte screen_width = 80
@@ -153,46 +155,97 @@ platform {
     }
 
     sub sound_init() {
-        sound_on = false
+        sound_on = true
+        cx16.vpoke(1, $f9c2, %00111111)     ; volume max, no channels
+        psg.silent()
+        cx16.enable_irq_handlers(true)
+        cx16.set_vsync_irq_handler(&psg.envelopes_irq)
     }
 
     sub sound_toggle() {
-
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
     }
 
     sub sound_mute() {
-
-    }
-
-    sub sound_start() {
-
+        psg.silent()
     }
 
     sub sound_clear() {
-
+        ; soft click/"tschk" sound
+        psg.freq(0, 15600)
+        psg.voice(0, psg.LEFT | psg.RIGHT, 32, psg.NOISE, 0)
+        psg.envelope(0, 32, 200, 1, 100)
+        sys.wait(5)
+        sound_mute()
     }
 
     sub sound_flag() {
-
+        psg.freq(2, 1500)
+        psg.voice(2, psg.LEFT | psg.RIGHT, 32, psg.TRIANGLE, 0)
+        psg.envelope(2, 40, 100, 6, 10)
+        sys.wait(5)
+        sound_mute()
     }
 
     sub sound_small_bomb() {
-
+        psg.freq(3, 1400)
+        psg.voice(3, psg.LEFT | psg.RIGHT, 63, psg.NOISE, 0)
+        psg.envelope(3, 63, 100, 8, 10)
+        sys.wait(math.randrange(4))
     }
 
     sub sound_large_bomb() {
-
-    }
-
-    sub sound_lost() {
-
+        ; big explosion
+        psg.freq(4, 2500)
+        psg.voice(4, psg.LEFT | psg.RIGHT, 63, psg.NOISE, 0)
+        psg.envelope(4, 63, 100, 20, 10)
+        sys.wait(70)
     }
 
     sub sound_won() {
+        psg.silent()
+        psg.voice(0, psg.LEFT, 63, psg.TRIANGLE, 0)
+        psg.voice(1, psg.RIGHT, 63, psg.TRIANGLE, 0)
+        cx16.enable_irq_handlers(true)
+        cx16.set_vsync_irq_handler(&psg.envelopes_irq)
+
+        uword note
+        for note in notes {
+            ubyte note0 = lsb(note)
+            ubyte note1 = msb(note)
+            psg.freq(0, vera_freqs[note0])
+            psg.freq(1, vera_freqs[note1])
+            psg.envelope(0, 63, 255, 0, 6)
+            psg.envelope(1, 63, 255, 0, 6)
+            sys.wait(10)
+        }
+
+        psg.silent()
+        cx16.disable_irq_handlers()
 
     }
 
 
+    ; details about the boulderdash music can be found here:
+    ; https://www.elmerproductions.com/sp/peterb/sounds.html#Theme%20tune
+
+    uword[] notes = [
+        $1622, $1d26, $2229, $252e, $1424, $1f27, $2029, $2730,
+        $122a, $122c, $1e2e, $1231, $202c, $3337, $212d, $3135,
+        $1622, $162e, $161d, $1624, $1420, $1430, $1424, $1420,
+        $1622, $162e, $161d, $1624, $1e2a, $1e3a, $1e2e, $1e2a,
+        $142e, $142e, $142e, $142e, $202e, $202e, $142e, $142e]
+
+    uword[] vera_freqs = [
+        0,0,0,0,0,0,0,0,0,0,   ; first 10 notes are not used
+        120, 127, 135, 143, 152, 160, 170, 180, 191, 203,
+        215, 227, 240, 255, 270, 287, 304, 320, 341, 360,
+        383, 405, 429, 455, 479, 509, 541, 573, 607, 640,
+        682, 720, 766, 810, 859, 910, 958, 1019, 1082, 1147,
+        1215, 1280, 1364, 1440, 1532, 1621, 1718, 1820, 1917]
 }
 
 game {

@@ -41,6 +41,7 @@ platform {
     ubyte restore_bdcolor = 0                   ; save border color
     ubyte restore_bgcolor = 0                   ; save background color
     ubyte restore_color = 0                     ; save text color color
+    ubyte restore_speed = 0                     ; save system speed setting
     bool sound_on
     bool first_time = true
 
@@ -56,6 +57,7 @@ platform {
         restore_height = screen_height
         restore_bdcolor = c64.EXTCOL
         restore_bgcolor = c64.BGCOL0
+        restore_speed = mega65.get_speed()
         ;restore_color = cbm.COLOR  ; TODO: need to find this or read color ram.
 
         ; set game colors
@@ -164,6 +166,7 @@ platform {
     }
 
     sub sound_clear() {
+        mega65.speed(1)
         c64.MVOL = 5
         c64.AD1 = %00100010
         c64.SR1 = %00000000
@@ -172,9 +175,11 @@ platform {
         c64.CR1 = %10000001
         sys.wait(10)
         sound_mute()
+        mega65.speed(restore_speed)
     }
 
     sub sound_flag() {
+        mega65.speed(1)
         c64.MVOL = 8
         c64.AD1 = %01010111
         c64.SR1 = %00000000
@@ -183,9 +188,11 @@ platform {
         c64.CR1 = %00010001
         sys.wait(10)
         sound_mute()
+        mega65.speed(restore_speed)
     }
 
     sub sound_small_bomb() {
+        mega65.speed(1)
         c64.MVOL = 10
         c64.AD1 = %01100110
         c64.SR1 = %00000000
@@ -193,19 +200,24 @@ platform {
         c64.CR1 = %10000000
         c64.CR1 = %10000001
         sys.wait(math.randrange(4))
+        mega65.speed(restore_speed)
     }
 
     sub sound_large_bomb() {
+        mega65.speed(1)
         c64.MVOL = 15
         c64.AD1 = %01101010
         c64.SR1 = %00000000
         c64.FREQ1 = 2600
         c64.CR1 = %10000000
         c64.CR1 = %10000001
+        sys.wait(70)
+        mega65.speed(restore_speed)
     }
 
     sub sound_won() {
         const ubyte waveform = %0001       ; triangle
+        mega65.speed(1)
         c64.AD1 = %00011010
         c64.SR1 = %00000000
         c64.AD2 = %00011010
@@ -225,6 +237,7 @@ platform {
             c64.CR2 = waveform <<4 | 1
             sys.wait(8)
         }
+        mega65.speed(restore_speed)
     }
 
     uword[] notes = [

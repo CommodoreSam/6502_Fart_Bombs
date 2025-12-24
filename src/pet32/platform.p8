@@ -89,42 +89,59 @@ platform {
     }
 
     sub sound_init() {
-        sound_on = false
+        sound_on = true
     }
 
     sub sound_toggle() {
-
+        if sound_on
+            sound_on = false
+        else
+            sound_on = true
     }
 
     sub sound_mute() {
-
-    }
-
-    sub sound_start() {
-
+        @(59467)=0
     }
 
     sub sound_clear() {
-
+        @(59467)=16
+        @(59466)=85
+        @(59664)=177
+        sys.wait(3)
+        sound_mute()
     }
 
     sub sound_flag() {
-
+        @(59467)=16
+        @(59466)=15
+        @(59664)=177
+        sys.wait(1)
+        sound_mute()
     }
 
     sub sound_small_bomb() {
-
+        @(59467)=16
+        @(59466)=85
+        @(59664)=100
+        sys.wait(1)
+        sound_mute()
     }
 
     sub sound_large_bomb() {
 
     }
 
-    sub sound_lost() {
-
-    }
-
     sub sound_won() {
+        ubyte[] notes_array = [16,85,177,3,16,15,177,3,16,85,120,1,0,0,0,3,16,85,140,6,0,0,0,3,16,85,100,10,
+                               16,85,177,3,16,15,177,3,16,85,120,1,0,0,0,3,16,85,140,6,0,0,0,3,16,85,100,10,
+                               16,85,177,3,16,15,177,3,16,85,120,1,0,0,0,3,16,85,140,3,16,85,100,3]
+        ubyte note
+        for note in 0 to ((sizeof(notes_array)) - 1) step 4 {
+            @(59467)=notes_array[note]
+            @(59466)=notes_array[note+1]
+            @(59664)=notes_array[note+2]
+            sys.wait(notes_array[note+3])
+        }
 
     }
 

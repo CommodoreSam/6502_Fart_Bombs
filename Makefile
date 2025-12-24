@@ -113,7 +113,7 @@ emu-plus4:	build/6502fb-plus4.prg
 	xplus4 -default -model plus4ntsc -autostartprgmode 1 build/6502fb-plus4.prg
 
 emu-mega65:	build/6502fb-mega65.prg
-	xmega65 -besure -videostd 1 -prgmode 65 -prg build/6502fb-mega65.prg
+	xmega65 -model 5 -besure -videostd 1 -prgmode 65 -prg build/6502fb-mega65.prg
 
 emu-f256:	build/6502fb-f256.pgz
 	env MTOOLSRC=../f256/mtools.rc mcopy -n -o build/6502fb-f256.pgz p:6502fb.pgz
