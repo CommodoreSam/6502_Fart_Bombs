@@ -1,12 +1,6 @@
 ;
 ; read/write User Port pins / bits
 ;
-platform {
-
-    sub init() {
-        ;userport.init(%10101010)
-    }
-}
 
 userport {
 %option merge

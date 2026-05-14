@@ -1,15 +1,6 @@
 ;
 ; read/write User Port pins / bits
 ;
-platform {
-
-    sub init() {
-        ;c64.EXTCOL = 0
-        ;c64.BGCOL0 = 0
-        ;userport.init(%10101010)
-    }
-}
-
 userport {
 %option merge
 %option ignore_unused

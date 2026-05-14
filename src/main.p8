@@ -8,6 +8,7 @@
 %import syslib
 %import conv
 %import platform
+%import userport
 %zeropage basicsafe
 
 main {
@@ -17,6 +18,7 @@ main {
         do {
             ubyte status=0
             platform.set_screen_mode(platform.title_width)
+            game.set_userport()
             game.draw_splash()
             platform.set_screen_mode(platform.grid_mode[game.difficulty])
             game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty])
@@ -39,6 +41,28 @@ main {
 }
 
 game {
+
+   sub set_userport() {
+        ;initialize user port to output
+        userport.pinmode(userport.PIN_C, userport.OUTPUT)
+        userport.pinmode(userport.PIN_D, userport.OUTPUT)
+        userport.pinmode(userport.PIN_E, userport.OUTPUT)
+        userport.pinmode(userport.PIN_F, userport.OUTPUT)
+        userport.pinmode(userport.PIN_H, userport.OUTPUT)
+        userport.pinmode(userport.PIN_J, userport.OUTPUT)
+        userport.pinmode(userport.PIN_K, userport.OUTPUT)
+        userport.pinmode(userport.PIN_L, userport.OUTPUT)
+        userport.pinwrite(userport.PIN_C, userport.HIGH)
+        userport.pinwrite(userport.PIN_D, userport.HIGH)
+        userport.pinwrite(userport.PIN_E, userport.HIGH)
+        userport.pinwrite(userport.PIN_F, userport.HIGH)
+        userport.pinwrite(userport.PIN_H, userport.HIGH)
+        userport.pinwrite(userport.PIN_J, userport.HIGH)
+        userport.pinwrite(userport.PIN_K, userport.HIGH)
+        userport.pinwrite(userport.PIN_L, userport.HIGH)
+   }
+
+
 
    sub set_boardsize(ubyte columns, ubyte rows) {
         ;sets the main board size variables
@@ -493,8 +517,12 @@ game {
         ;deflag only if a flag
         ;when at bombs left at 0 check to see if all actually found
         ubyte complete='n'
-        if platform.sound_on
+        if platform.sound_on {
             platform.sound_flag()
+            userport.pinwrite(userport.PIN_C, userport.LOW)
+            sys.wait(10)
+            userport.pinwrite(userport.PIN_C, userport.HIGH)
+        }
         if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
             txt.setchr(board_topx+xf,board_topy+yf,current_char)
         ubyte testchr = txt.getchr(board_topx+xf, board_topy+yf)
