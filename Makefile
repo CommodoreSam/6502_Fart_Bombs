@@ -119,7 +119,8 @@ emu-f256:	build/6502fb-f256.pgz
 	env MTOOLSRC=../f256/mtools.rc mcopy -n -o build/6502fb-f256.pgz p:6502fb.pgz
 	(cd ../f256 && ./f256 f256k -sound none -window -resolution 1440x900 -harddisk ./sdcard.img)
 
-
+push-to-c64u:	build/6502fb-c64.prg
+	c64u runners run-prg-upload build/6502fb-c64.prg
 #
 # end-of-file
 #
