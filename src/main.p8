@@ -52,14 +52,14 @@ game {
         userport.pinmode(userport.PIN_J, userport.OUTPUT)
         userport.pinmode(userport.PIN_K, userport.OUTPUT)
         userport.pinmode(userport.PIN_L, userport.OUTPUT)
-        userport.pinwrite(userport.PIN_C, userport.HIGH)
-        userport.pinwrite(userport.PIN_D, userport.HIGH)
-        userport.pinwrite(userport.PIN_E, userport.HIGH)
-        userport.pinwrite(userport.PIN_F, userport.HIGH)
-        userport.pinwrite(userport.PIN_H, userport.HIGH)
-        userport.pinwrite(userport.PIN_J, userport.HIGH)
-        userport.pinwrite(userport.PIN_K, userport.HIGH)
-        userport.pinwrite(userport.PIN_L, userport.HIGH)
+        userport.pinwrite(userport.PIN_C, userport.LOW)
+        userport.pinwrite(userport.PIN_D, userport.LOW)
+        userport.pinwrite(userport.PIN_E, userport.LOW)
+        userport.pinwrite(userport.PIN_F, userport.LOW)
+        userport.pinwrite(userport.PIN_H, userport.LOW)
+        userport.pinwrite(userport.PIN_J, userport.LOW)
+        userport.pinwrite(userport.PIN_K, userport.LOW)
+        userport.pinwrite(userport.PIN_L, userport.LOW)
    }
 
 
@@ -519,9 +519,9 @@ game {
         ubyte complete='n'
         if platform.sound_on {
             platform.sound_flag()
-            userport.pinwrite(userport.PIN_C, userport.LOW)
-            sys.wait(10)
             userport.pinwrite(userport.PIN_C, userport.HIGH)
+            sys.wait(10)
+            userport.pinwrite(userport.PIN_C, userport.LOW)
         }
         if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
             txt.setchr(board_topx+xf,board_topy+yf,current_char)
@@ -680,6 +680,11 @@ game {
                 txt.color(board_tile_bombcolor)
                 txt.plot(menu_offset,board_topy + row_count + 1)
                 txt.print("boom! you lose...")
+                if platform.sound_on {
+                    userport.pinwrite(userport.PIN_D, userport.HIGH)
+                    sys.wait(10)
+                    userport.pinwrite(userport.PIN_D, userport.LOW)
+                }
                 show_bombs()
                 txt.plot(menu_offset,board_topy + row_count + 2)
                 txt.print("play again (y/n)?")
@@ -688,6 +693,9 @@ game {
                 txt.plot(menu_offset,board_topy + row_count + 1)
                 txt.print("awesome, you won!!!")
                 if platform.sound_on {
+                    userport.pinwrite(userport.PIN_E, userport.HIGH)
+                    sys.wait(10)
+                    userport.pinwrite(userport.PIN_E, userport.LOW)
                     platform.sound_won()
                     platform.sound_mute()
                 }
