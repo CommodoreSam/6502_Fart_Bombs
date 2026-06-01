@@ -8,17 +8,15 @@
 %import syslib
 %import conv
 %import platform
-%import userport
 %zeropage basicsafe
 
 main {
-    sub start() {
+   sub start() {
         platform.init()
         platform.sound_init()
         do {
             ubyte status=0
             platform.set_screen_mode(platform.title_width)
-            game.set_userport()
             game.draw_splash()
             platform.set_screen_mode(platform.grid_mode[game.difficulty])
             game.set_boardsize(platform.grid_width[game.difficulty], platform.grid_height[game.difficulty])
@@ -41,28 +39,16 @@ main {
 }
 
 game {
-
-   sub set_userport() {
-        ;initialize user port to output
-        userport.pinmode(userport.PIN_C, userport.OUTPUT)
-        userport.pinmode(userport.PIN_D, userport.OUTPUT)
-        userport.pinmode(userport.PIN_E, userport.OUTPUT)
-        userport.pinmode(userport.PIN_F, userport.OUTPUT)
-        userport.pinmode(userport.PIN_H, userport.OUTPUT)
-        userport.pinmode(userport.PIN_J, userport.OUTPUT)
-        userport.pinmode(userport.PIN_K, userport.OUTPUT)
-        userport.pinmode(userport.PIN_L, userport.OUTPUT)
-        userport.pinwrite(userport.PIN_C, userport.LOW)
-        userport.pinwrite(userport.PIN_D, userport.LOW)
-        userport.pinwrite(userport.PIN_E, userport.LOW)
-        userport.pinwrite(userport.PIN_F, userport.LOW)
-        userport.pinwrite(userport.PIN_H, userport.LOW)
-        userport.pinwrite(userport.PIN_J, userport.LOW)
-        userport.pinwrite(userport.PIN_K, userport.LOW)
-        userport.pinwrite(userport.PIN_L, userport.LOW)
-   }
-
-
+    const ubyte EVENT_NONE = 0
+    const ubyte EVENT_LEFT = 1
+    const ubyte EVENT_RIGHT = 2
+    const ubyte EVENT_UP = 3
+    const ubyte EVENT_DOWN = 4
+    const ubyte EVENT_UNCOVER = 5
+    const ubyte EVENT_FLAG = 6
+    const ubyte EVENT_NEW_GAME = 7
+    const ubyte EVENT_LEAVE_GAME = 8
+    const ubyte EVENT_CONFIG = 9
 
    sub set_boardsize(ubyte columns, ubyte rows) {
         ;sets the main board size variables
@@ -86,7 +72,7 @@ game {
         txt.plot(menu_offset,1)
         txt.print("  6502 fart b*mbs!  ")
         txt.plot(menu_offset,2)
-        txt.print("       v2.2         ")
+        txt.print("       v2.3         ")
         txt.rvs_off()
         txt.plot(menu_offset,4)
         txt.print("  by @commodoresam")
@@ -354,57 +340,54 @@ game {
             if cbm.STOP2()
                 return 0
 
-            ubyte key = cbm.GETIN2()
-            when key {
-                'l' -> {                                ;quit/leave
+            ubyte event = platform.input_scan()
+            when event {
+                EVENT_LEAVE_GAME -> {                                ;quit/leave
                     again_answer = play_again('q')
                     if again_answer == 'y'
                         return 0
                     else
                         draw_menu()
                 }
-                136 -> {                                ;toggle sound
+                EVENT_CONFIG -> {                                ;toggle sound
                     platform.sound_toggle()
                 }
-                'n' -> {                                ;new game
+                EVENT_NEW_GAME -> {                                ;new game
                     again_answer = play_again('n')
                     if again_answer == 'y'
                         return 1
                     else
                         draw_menu()
                 }
-                'a', 157 -> {                           ;cursor left a or arrow
+                EVENT_LEFT -> {                           ;cursor left a or arrow
                     if col_current > 1 {
                         cursor_off(col_current,row_current)
                         col_current--
                         cursor_on(col_current,row_current)
                     }
                 }
-                'd', 29 -> {                            ;cursor right d or arrow
+                EVENT_RIGHT -> {                            ;cursor right d or arrow
                     if col_current < (col_count - 2) {
                         cursor_off(col_current,row_current)
                         col_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                's', 17 -> {                            ;down s or arrow
+                EVENT_DOWN -> {                            ;down s or arrow
                     if row_current < (row_count - 2) {
                         cursor_off(col_current,row_current)
                         row_current++
                         cursor_on(col_current,row_current)
                     }
                 }
-                'w', 145 -> {                           ;up w or arrow
+                EVENT_UP -> {                           ;up w or arrow
                     if row_current > 1 {
                         cursor_off(col_current,row_current)
                         row_current--
                         cursor_on(col_current,row_current)
                     }
                 }
-                '*' -> {                                ;show bombs for testing purposes (not on menu)
-                    show_bombs()
-                }
-                'f' -> {                                ;flag and if result is all found call play again with win value
+                EVENT_FLAG -> {                                ;flag and if result is all found call play again with win value
                     ubyte complete = flag(col_current,row_current)
                     if complete == 'y' {
                         again_answer = play_again('w')
@@ -414,7 +397,7 @@ game {
                             return 0
                     }
                 }
-                ' ' -> {                                ;uncover tile and bomb is hit call play again with lose value
+                EVENT_UNCOVER -> {                                ;uncover tile and bomb is hit call play again with lose value
                     if platform.sound_on
                         platform.sound_clear()
                     ubyte under = uncover(col_current,row_current)
@@ -519,9 +502,6 @@ game {
         ubyte complete='n'
         if platform.sound_on {
             platform.sound_flag()
-            userport.pinwrite(userport.PIN_C, userport.HIGH)
-            sys.wait(10)
-            userport.pinwrite(userport.PIN_C, userport.LOW)
         }
         if txt.getchr(board_topx+xf,board_topy+yf) == cursor_char
             txt.setchr(board_topx+xf,board_topy+yf,current_char)
@@ -680,11 +660,6 @@ game {
                 txt.color(board_tile_bombcolor)
                 txt.plot(menu_offset,board_topy + row_count + 1)
                 txt.print("boom! you lose...")
-                if platform.sound_on {
-                    userport.pinwrite(userport.PIN_D, userport.HIGH)
-                    sys.wait(10)
-                    userport.pinwrite(userport.PIN_D, userport.LOW)
-                }
                 show_bombs()
                 txt.plot(menu_offset,board_topy + row_count + 2)
                 txt.print("play again (y/n)?")
@@ -693,9 +668,6 @@ game {
                 txt.plot(menu_offset,board_topy + row_count + 1)
                 txt.print("awesome, you won!!!")
                 if platform.sound_on {
-                    userport.pinwrite(userport.PIN_E, userport.HIGH)
-                    sys.wait(10)
-                    userport.pinwrite(userport.PIN_E, userport.LOW)
                     platform.sound_won()
                     platform.sound_mute()
                 }

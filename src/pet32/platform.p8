@@ -88,6 +88,22 @@ platform {
         }
     }
 
+    sub input_scan() -> ubyte {
+        ubyte key = cbm.GETIN2()
+        when key {
+            'l' -> return game.EVENT_LEAVE_GAME
+            136 -> return game.EVENT_CONFIG
+            'n' -> return game.EVENT_NEW_GAME
+            'a', 157 -> return game.EVENT_LEFT
+            'd', 29 -> return game.EVENT_RIGHT
+            's', 17 -> return game.EVENT_DOWN
+            'w', 145 -> return game.EVENT_UP
+            'f' -> return game.EVENT_FLAG
+            ' ' -> return game.EVENT_UNCOVER
+        }
+        return game.EVENT_NONE
+    }
+
     sub sound_init() {
         sound_on = true
     }
