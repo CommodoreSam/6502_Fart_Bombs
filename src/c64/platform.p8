@@ -1,6 +1,8 @@
 %import input
-%import input_platform
+%import input_keyboard
 %import input_joystick
+%import input_snes_petscii
+%import input_platform
 
 platform {
 
@@ -94,7 +96,7 @@ platform {
             }
         }
     }
-
+    uword last_scan
     sub input_scan() -> ubyte {
         ubyte key = cbm.GETIN2()
         when key {
@@ -107,6 +109,24 @@ platform {
             'w', 145 -> return game.EVENT_UP
             'f' -> return game.EVENT_FLAG
             ' ' -> return game.EVENT_UNCOVER
+        }
+        uword snes = input.get(4) ; 4=multi-fire-button mode 2=single-fire mode
+        if snes == last_scan return game.EVENT_NONE
+        last_scan = snes
+        if (snes & input.BUTTON_A) == 0 {                                   ; fire pressed
+            if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NONE
+            if (snes & input.DPAD_UP) == 0 return game.EVENT_UNCOVER
+            if (snes & input.DPAD_DOWN) == 0 return game.EVENT_FLAG
+            if (snes & input.DPAD_LEFT) == 0 return game.EVENT_LEAVE_GAME
+            if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_NEW_GAME
+        } else {                                                            ; normal
+            if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NONE
+            if (snes & input.DPAD_UP) == 0 return game.EVENT_UP
+            if (snes & input.DPAD_DOWN) == 0 return game.EVENT_DOWN
+            if (snes & input.DPAD_LEFT) == 0 return game.EVENT_LEFT
+            if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_RIGHT
+            if (snes & input.BUTTON_B) == 0 return game.EVENT_FLAG
+            if (snes & input.BUTTON_X) == 0 return game.EVENT_UNCOVER
         }
         return game.EVENT_NONE
     }
