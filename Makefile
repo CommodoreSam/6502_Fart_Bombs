@@ -37,16 +37,19 @@ EMU_REU=-reu -reusize $(EMU_REUSIZE)
 EMU=$(EMU_CMD) $(EMU_BASE) $(EMU_KERNAL) $(EMU_DISK) $(EMU_DOS) $(EMU_REU)
 
 PCC=prog8c
-PCCARGSC64=-srcdirs src:src$(SEP)c64:input/src:input/src/c64 -asmlist -target c64 -out build
-PCCARGSX16=-srcdirs src:src$(SEP)cx16 -asmlist -target cx16 -out build
-PCCARGSP32=-srcdirs src:src$(SEP)pet32 -asmlist -target pet32 -out build
-PCCARGS128=-srcdirs src:src$(SEP)c128 -asmlist -target c128 -out build
-PCCARGSVIC=-srcdirs src:src$(SEP)vic20 -asmlist -target config$(SEP)vic20plus8.properties -out build
-PCCARGS264=-srcdirs src:src$(SEP)plus4 -asmlist -target config$(SEP)plus4.properties -out build
-PCCARGSM65=-srcdirs src:src$(SEP)mega65 -asmlist -target config$(SEP)mega65.properties -out build
-PCCARGSF256=-srcdirs src:src$(SEP)f256 -asmlist -target config$(SEP)f256.properties -out build
+PCCARGSBASE=-asmlist -out build
+PCCARGSDIRS=-srcdirs src:input$(SEP)src
+PCCARGSC64=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)c64:input$(SEP)src$(SEP)c64 -target c64
+PCCARGSX16=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)cx16 -target cx16
+PCCARGSP32=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)pet32 -target pet32
+PCCARGS128=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)c128 -target c128
+PCCARGSVIC=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)vic20 -target config$(SEP)vic20plus8.properties
+PCCARGS264=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)plus4 -target config$(SEP)plus4.properties
+PCCARGSM65=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)mega65 -target config$(SEP)mega65.properties
+PCCARGSF256=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)f256 -target config$(SEP)f256.properties
+PCCARGSGTC=$(PCCARGSBASE) $(PCCARGSDIRS):src$(SEP)gametank:input$(SEP)src$(SEP)gametank -varsgolden -slabsgolden -target config$(SEP)gametank.properties
 
-PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg build/6502fb-mega65.prg
+PROGS	= build/6502fb-c64.prg build/6502fb-cx16.prg build/6502fb-pet32.prg build/6502fb-c128.prg build/6502fb-vic20.prg build/6502fb-plus4.prg build/6502fb-mega65.prg build/6502fb-gametank.gtr
 
 SRCS	= src/main.p8
 
@@ -87,6 +90,25 @@ build/6502fb-f256.pgz: src/main_other.p8 src/main.p8 src/f256/platform.p8
 	$(PCC) $(PCCARGSF256) $<
 	mv build/main_other.bin build/6502fb-f256.pgz
 
+build/6502fb-gametank.gtr: src/main_rom.p8 src/main.p8 src/gametank/platform.p8
+	$(PCC) $(PCCARGSGTC) $<
+	truncate -s 2m $@
+	dd if=build/main_rom.bin of=$@ bs=16K seek=127 conv=notrunc
+
+build/cartload64.bin: src/cartload64.p8 build/6502fb-c64.prg
+	$(PCC) $(PCCARGSC64) -varshigh 1 -slabshigh 1 $<
+	truncate -s 16k $@
+
+build/6502fb-c64.crt: build/cartload64.bin
+	cartconv -t normal -i $< -o $@
+
+build/cartload128.bin: src/cartload128.p8 build/6502fb-c128.prg
+	$(PCC) $(PCCARGS128) -varsgolden -slabsgolden $<
+	truncate -s 16k $@
+
+build/6502fb-c128.crt: build/cartload128.bin
+	cartconv -t c128 -l 0x8000 -i $< -o $@
+
 clean:
 	$(RM) build$(SEP)*
 
@@ -97,6 +119,9 @@ disk:
 emu-c64:	build/6502fb-c64.prg
 	$(EMU) -autostartprgmode 1 build/6502fb-c64.prg
 
+emu-c64-cart:	build/6502fb-c64.crt
+	$(EMU) $<
+
 emu-cx16:	build/6502fb-cx16.prg
 	x16emu -scale 2 -run -prg build/6502fb-cx16.prg
 
@@ -105,6 +130,9 @@ emu-pet32:	build/6502fb-pet32.prg
 
 emu-c128:	build/6502fb-c128.prg
 	x128 -autostartprgmode 1 build/6502fb-c128.prg
+
+emu-c128-cart:	build/6502fb-c128.crt
+	x128 $<
 
 emu-vic20:	build/6502fb-vic20.prg
 	xvic -model vic20ntsc -memory 8k -autostartprgmode 1 build/6502fb-vic20.prg
@@ -119,8 +147,15 @@ emu-f256:	build/6502fb-f256.pgz
 	env MTOOLSRC=../f256/mtools.rc mcopy -n -o build/6502fb-f256.pgz p:6502fb.pgz
 	(cd ../f256 && ./f256 f256k -sound none -window -resolution 1440x900 -harddisk ./sdcard.img)
 
+emu-gametank:	build/6502fb-gametank.gtr
+	GameTankEmulator $<
+
 push-to-c64u:	build/6502fb-c64.prg
 	c64u runners run-prg-upload build/6502fb-c64.prg
+
+flash-gametank:	build/6502fb-gametank.gtr
+	echo Run this: gtld load $<
+
 #
 # end-of-file
 #

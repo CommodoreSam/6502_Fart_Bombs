@@ -1,2 +1,0 @@
-%launcher none
-%import main

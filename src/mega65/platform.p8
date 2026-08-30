@@ -309,6 +309,7 @@ game {
     const ubyte board_scorecolor = cbm.COLOR_GREEN
     const ubyte board_tile_flagcolor = cbm.COLOR_RED
     const ubyte board_tile_bombcolor = cbm.COLOR_RED
+    const bool reverse_covered_tile = true
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,
                                     cbm.COLOR_WHITE,

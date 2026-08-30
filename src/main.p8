@@ -11,7 +11,7 @@
 %zeropage basicsafe
 
 main {
-   sub start() {
+    sub start() {
         platform.init()
         platform.sound_init()
         do {
@@ -203,9 +203,9 @@ game {
         txt.plot(board_topx,board_topy+1)
         for y in 2 to row_count - 1 {
             txt.chrout(board_leftline) ;vertical line
-            txt.rvs_on()
+            if reverse_covered_tile txt.rvs_on()
             midpart()
-            txt.rvs_off()
+            if reverse_covered_tile txt.rvs_off()
             txt.chrout(board_rightline) ;vertical line
             txt.plot(board_topx,board_topy+y)
         }
@@ -239,7 +239,8 @@ game {
         ;tell player bombs are being set
         txt.plot(menu_offset,board_topy + row_count + 1)
         txt.color(board_scorecolor)
-        txt.print("fart b*mbs loading...")
+        ;txt.print("fart b*mbs loading..")
+        txt.print("fart b*mbing...")
         ;place bombs
         bombs_total = bomb_rand()
         bombs_left=bombs_total
@@ -264,7 +265,7 @@ game {
                     col_index <= (board_topx + col_count - 2) and
                     row_index >= (board_topy + 1) and
                     row_index <= (board_topy + row_count - 2) {
-                    if math.randrange(platform.grid_density[difficulty]) == 4 {
+                    if math.randrange_rom(platform.grid_density[difficulty]) == 4 {
                         if (col_index == board_topx + 1) and (row_index == board_topy + 1)
                             continue
                         set_value(col_index,row_index,board_tile_bomb)
@@ -330,13 +331,11 @@ game {
         ubyte again_answer
         col_current=1
         row_current=1
-        ;turn repeat key on
-        @(650) = 128
         cursor_on(col_current,row_current)
         repeat {
             if platform.blink_timer() {
                 game.blink_char(col_current,row_current)
-        }
+            }
             if cbm.STOP2()
                 return 0
 
@@ -411,7 +410,7 @@ game {
                             uncover_toborderul()
                         } until uncovered == 0
                     }
-                    if under == 42 {    ;you hit a bomb dummy
+                    if under == game.board_tile_bomb {    ;you hit a bomb dummy
                         again_answer = play_again('l')
                         if again_answer == 'y'
                             return 1
@@ -449,7 +448,7 @@ game {
         void uncover(xe+1,ye+1)
 
     }
-    
+
     sub uncover_toborderrd() {
         ubyte col_spc = 0
         ubyte row_spc = 0
@@ -658,36 +657,133 @@ game {
         when reason {
             'l' -> {
                 txt.color(board_tile_bombcolor)
-                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.plot(menu_offset,board_topy + row_count + 0)
                 txt.print("boom! you lose...")
                 show_bombs()
-                txt.plot(menu_offset,board_topy + row_count + 2)
-                txt.print("play again (y/n)?")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("play again")
             }
             'w' -> {
-                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.plot(menu_offset,board_topy + row_count + 0)
                 txt.print("awesome, you won!!!")
                 if platform.sound_on {
                     platform.sound_won()
                     platform.sound_mute()
                 }
-                txt.plot(menu_offset,board_topy + row_count + 2)
-                txt.print("play again (y/n)?")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("play again")
             }
             'q' -> {
-                txt.plot(menu_offset,board_topy + row_count + 2)
-                txt.print("leave game (y/n)?")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("leave game")
             }
             'n' -> {
-                txt.plot(menu_offset,board_topy + row_count + 2)
-                txt.print("new game (y/n)?")
+                txt.plot(menu_offset,board_topy + row_count + 1)
+                txt.print("new game")
             }
         }
+        ; new yes/no selector (returns 'y' or 'n')
+        ; should probably be bool true/false
+        return askyesno()
+    }
+
+    ;
+    ; Having this separated means it can be replaced
+    ; (monkey-patched) by the platform file.
+    ;
+    sub askyesno() -> ubyte {
+        ubyte again = 'x'
+
+        ; print here so we don't when replacing this routine.
+        txt.print(" (y/n)?")
+
+        ; now check for Y/N
         do {
             again = cbm.GETIN2()
         } until again == 'y' or again == 'n'
         return again
     }
 
+    ; struct for a single selector with multiple choices.
+    ; needs to be in ram as index/active are updated.
+    struct Selector {
+        ubyte index     ; currently selected value (what is visible)
+        ubyte num       ; number of choices
+        ubyte column
+        ubyte row
+        ubyte width
+        bool active
+        ^^uword choices
+    }
+
+    ; draw a rotating item selection based on event
+    ; this just draws the correct selector view and returns.
+    ; the caller is handling the input and deciding which selector
+    ; is active etc.
+    ; EVENT_NONE means we are just redrawing the selector
+    ; which is typically when we change the active state.
+    sub selector(^^Selector item, ubyte event) {
+        ubyte length
+
+        when event {
+            EVENT_NONE -> {
+                ; we are just redrawing.
+            }
+            EVENT_LEFT -> {
+                if item.index > 0 {
+                    item.index--
+                }
+                else {
+                    item.index = item.num-1
+                }
+                ; else return? (so no redraw of same item)
+            }
+            EVENT_RIGHT -> {
+                if item.index < item.num-1 {
+                    item.index++
+                }
+                else {
+                    item.index = 0
+                }
+                ; else return? (so no redraw of same item)
+            }
+            else -> {
+                ; any other event is ignored
+                return
+            }
+        }
+
+        ; now we draw it.
+        txt.plot(item.column,item.row)
+        ; clear selector text area
+        repeat item.width {
+            txt.spc()
+        }
+
+        length = strings.length(item.choices[item.index])
+
+        ; reposition at start of draw based on length of item.
+        ; if the item is less than the full width, we center it.
+        if length+6 < item.width {
+            txt.plot(item.column + (item.width-length-6)/2,item.row)
+        } else {
+            txt.plot(item.column,item.row)
+        }
+
+        txt.color(board_fgcolor)
+        txt.print("<<")
+        txt.color(board_scorecolor)
+        if item.active {
+            txt.rvs_on()
+        }
+        txt.spc()
+        txt.print(item.choices[item.index])
+        txt.spc()
+        if item.active {
+            txt.rvs_off()
+        }
+        txt.color(board_fgcolor)
+        txt.print(">>")
+    }
 }
 

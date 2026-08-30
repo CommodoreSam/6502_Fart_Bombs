@@ -97,12 +97,16 @@ platform {
         }
     }
     uword last_scan
+    ; index of gamepad selector is the input device we use
+    ; NOTE: we can't use GETIN2 *and* keyboard joystick input
+    ; or we get double events. (so input_keyboard commented out above)
+    alias active_input = game.last_gamepad
     sub input_scan() -> ubyte {
         ubyte key = cbm.GETIN2()
         when key {
             'l' -> return game.EVENT_LEAVE_GAME
             136 -> return game.EVENT_CONFIG
-            'n' -> return game.EVENT_NEW_GAME
+            'n', 13 -> return game.EVENT_NEW_GAME
             'a', 157 -> return game.EVENT_LEFT
             'd', 29 -> return game.EVENT_RIGHT
             's', 17 -> return game.EVENT_DOWN
@@ -110,7 +114,7 @@ platform {
             'f' -> return game.EVENT_FLAG
             ' ' -> return game.EVENT_UNCOVER
         }
-        uword snes = input.get(4) ; 4=multi-fire-button mode 2=single-fire mode
+        uword snes = input.get(active_input)
         if snes == last_scan return game.EVENT_NONE
         last_scan = snes
         if (snes & input.BUTTON_A) == 0 {                                   ; fire pressed
@@ -271,6 +275,7 @@ game {
     const ubyte board_scorecolor = cbm.COLOR_GREEN
     const ubyte board_tile_flagcolor = cbm.COLOR_RED
     const ubyte board_tile_bombcolor = cbm.COLOR_RED
+    const bool reverse_covered_tile = true
     ubyte[] board_tile_num = [' ','1','2','3','4','5','6','7','8']
     ubyte[] board_tile_num_color = [board_bgcolor,
                                     cbm.COLOR_WHITE,
@@ -285,6 +290,320 @@ game {
     ubyte cursor_char = sc:'x'
     ubyte difficulty
     uword uncovered
+
+
+    ;
+    ; This overrides (monkey-patches) the one in main.p8
+    ;
+    sub askyesno() -> ubyte {
+        bool done = false
+        str yes = "yes"
+        str no = "no "
+        uword[2] @nosplit yesnotext = [no, yes] ; match boolean to index (0=false, 1=true)
+
+        ; ends up in ram
+        ^^Selector yesno = memory("yesno", sizeof(Selector), 1)
+        yesno.index = 1
+        yesno.num = 2
+        yesno.column = 21
+        yesno.row = board_topy + row_count + 1
+        yesno.width = 3
+        yesno.active = true
+        yesno.choices = &yesnotext
+
+        ; draw the selector first
+        selector(yesno, game.EVENT_NONE)
+
+        ; scan input
+        ; these are events in the *menu* not gameplay so
+        ; might seem slightly confusing. :)
+        do {
+          when platform.input_scan() {
+              game.EVENT_LEFT -> {
+                  selector(yesno, game.EVENT_LEFT)
+              }
+              game.EVENT_RIGHT -> {
+                  selector(yesno, game.EVENT_RIGHT)
+              }
+              ; accept any button press to return answer.
+              EVENT_FLAG, EVENT_NEW_GAME, EVENT_UNCOVER -> {
+                  done = true
+              }
+          }
+        } until done
+        ; return whether it was yes or no.
+        ; this and the play_again() caller should probably
+        ; switch to returning a bool true/false.
+        if yesno.index == 1 {
+            return 'y'
+        }
+        return 'n'
+    }
+
+    ; shows help / object of the game
+    sub draw_help() {
+        txt.cls()
+        platform.splash_back()
+        txt.rvs_on()
+        txt.plot(menu_offset+1,2)
+        txt.print(" object ")
+        txt.rvs_off()
+        txt.plot(menu_offset+1,3)
+        txt.color(board_scorecolor)
+        txt.print("-clear tiles.")
+        txt.plot(menu_offset+1,4)
+        txt.print("-flag bomb tiles.")
+        txt.plot(menu_offset+1,5)
+        txt.print("-number tiles")
+        txt.plot(menu_offset+1,6)
+        txt.print(" show bombs next")
+        txt.plot(menu_offset+1,7)
+        txt.print(" to that tile.")
+        txt.plot(menu_offset+1,8)
+        txt.print("-don't hit a b*mb!")
+        txt.color(board_fgcolor)
+        txt.plot(menu_offset+1,10)
+        txt.rvs_on()
+        txt.print(" gamepad control ")
+        txt.rvs_off()
+        txt.plot(menu_offset+1,12)
+        txt.color(board_scorecolor)
+        txt.print("move:")
+        txt.plot(menu_offset+9,12)
+        txt.color(board_fgcolor)
+        txt.chrout(10)
+        txt.rvs_on()
+        txt.print("dpad")
+        txt.rvs_off()
+        txt.plot(menu_offset+1,13)
+        txt.color(board_scorecolor)
+        txt.print("uncover:")
+        txt.color(board_fgcolor)
+        txt.plot(menu_offset+9,13)
+        txt.chrout(10)
+        txt.rvs_on()
+        txt.print("b")
+        txt.rvs_off()
+        txt.color(board_scorecolor)
+        txt.plot(menu_offset+1,14)
+        txt.print("flag:")
+        txt.plot(menu_offset+9,14)
+        txt.color(board_fgcolor)
+        txt.chrout(10)
+        txt.rvs_on()
+        txt.print("a")
+        txt.rvs_off()
+
+        txt.plot(menu_offset+1,15)
+        txt.color(board_scorecolor)
+        txt.print("mark b*mbs to win")
+        txt.color(board_tile_flagcolor)
+        txt.chrout(game.board_tile_flag)
+
+        txt.plot(menu_offset+2,17)
+        txt.color(board_fgcolor)
+        txt.print("press ")
+        txt.color(board_tile_flagcolor)
+        txt.print("c")
+        txt.color(board_fgcolor)
+        txt.print(" for ")
+        txt.color(board_scorecolor)
+        txt.print("menu")
+        txt.color(board_fgcolor)
+
+        ; wait for specific button (C)
+        while platform.input_scan() != game.EVENT_LEAVE_GAME {}
+    }
+
+    sub draw_splash() {
+        bool done = false
+        difficulty=0
+        do {
+            txt.cls()
+            platform.splash_back()
+            ubyte exit_title = 'n'
+            txt.color(board_fgcolor)
+            txt.rvs_on()
+            txt.plot(menu_offset+1,1)
+            txt.print("                  ")
+            txt.plot(menu_offset+1,2)
+            txt.print(" 6502 fart b*mbs! ")
+            txt.plot(menu_offset+1,3)
+            txt.print("      v2.3        ")
+            txt.plot(menu_offset+1,4)
+            txt.print("                  ")
+            txt.rvs_off()
+            txt.plot(menu_offset,6)
+            txt.print("  by @commodoresam")
+            txt.plot(menu_offset,7)
+            txt.print("  & andrew gillham")
+
+            txt.plot(menu_offset+2,15)
+            txt.color(board_fgcolor)
+            txt.print("press ")
+            txt.color(board_tile_flagcolor)
+            txt.print("s")
+            txt.color(board_fgcolor)
+            txt.print(" or ")
+            txt.color(board_tile_flagcolor)
+            txt.print("start")
+            txt.color(board_fgcolor)
+
+            txt.plot(menu_offset+2,17)
+            txt.color(board_fgcolor)
+            txt.print("press ")
+            txt.color(board_tile_flagcolor)
+            txt.print("c")
+            txt.color(board_fgcolor)
+            txt.print(" for ")
+            txt.color(board_scorecolor)
+            txt.print("help")
+            txt.color(board_fgcolor)
+
+            ; call new selector handling
+            ; use 255 as a signal to show help.
+            difficulty = title_menu()
+            if difficulty == 255 {
+                game.draw_help()
+            } else {
+                done = true
+            }
+        } until done
+    }
+
+    ; track last selection so each
+    ; time we hit the menu we don't have to reconfigure.
+    ubyte last_level
+    ubyte last_gamepad
+    ; we should draw the front menu and scan for input
+    ; if the input is dpad we see if it is up/down/left/right
+    ; and what that does for our menu.
+    ; should we have a menu struct or just per selector struct?
+    sub title_menu() -> ubyte {
+        bool done = false
+        const ubyte level_choices = platform.max_difficulty
+        str level1 = "level 01"
+        str level2 = "level 02"
+        str level3 = "level 03"
+        str level4 = "level 04"
+        str level5 = "level 05"
+        ; zero terminated probably a waste of bytes as we should known size.
+        uword[5] @nosplit leveltext = [level1, level2, level3, level4, level5]
+
+;        str gamepad1 = "controller 1"
+;        str gamepad2 = "controller 2"
+;        uword[2] @nosplit gamepadtext = [gamepad1, gamepad2]
+
+        ; set to maximum possible controllers. (8 for now)
+        uword[8] @nosplit gamepadtext
+        ubyte i
+        ubyte dev_count = input.count()
+        ^^input.Device tmp_device
+        for i in 0 to dev_count - 1 {
+            tmp_device = input.getdev(i)
+            gamepadtext[i] = tmp_device.name
+        }
+
+        ; ends up in rom
+;        ^^Selector levels = ^^Selector: [ 5, 4, 10, 8, leveltext ]
+;        ^^Selector gamepads = ^^Selector: [ 2, 4, 12, 12, gamepadtext ]
+
+        ; ends up in ram
+        ^^Selector levels = memory("levels", sizeof(Selector), 1)
+        levels.index = last_level
+        levels.num = 5
+        levels.column = 13
+        levels.row = 10
+        levels.width = 8
+        levels.active = true
+        levels.choices = &leveltext
+
+        ^^Selector gamepads = memory("gamepads", sizeof(Selector), 1)
+        gamepads.index = last_gamepad
+        gamepads.num = dev_count
+        gamepads.column = 10
+        gamepads.row = 12
+        gamepads.width = 21
+        gamepads.active = false
+        gamepads.choices = &gamepadtext
+
+        ^^Selector temp
+
+        ; "contains non constant elements"
+;        uword[] selector_array = [levels, gamepads]
+        ; this ends up in ram.
+        uword[2] selector_array
+        selector_array[0] = levels
+        selector_array[1] = gamepads
+        ubyte active_selector = 0
+
+        ; initial draw of two selectors
+
+        selector(levels, game.EVENT_NONE)
+        selector(gamepads, game.EVENT_NONE)
+
+        ; scan input
+        ; these are events in the *menu* not gameplay so
+        ; might seem slightly confusing. :)
+        do {
+            ; this is used to seed rnd(), varies by user input delay
+;            platform.prngcnt++
+          when platform.input_scan() {
+              game.EVENT_UP -> {
+                  if active_selector > 0 {
+                    ; deactivate old selector & redraw it
+                    temp = selector_array[active_selector]
+                    temp.active = false
+                    selector(temp, game.EVENT_NONE)
+
+                    active_selector--
+
+                    ; activate new selector & redraw it
+                    temp = selector_array[active_selector]
+                    temp.active = true
+                    selector(temp, game.EVENT_NONE)
+                  }
+              }
+              game.EVENT_DOWN -> {
+                  if active_selector < 1 {
+                    ; deactivate old selector & redraw it
+                    temp = selector_array[active_selector]
+                    temp.active = false
+                    selector(temp, game.EVENT_NONE)
+
+                    active_selector++
+
+                    ; activate new selector & redraw it
+                    temp = selector_array[active_selector]
+                    temp.active = true
+                    selector(temp, game.EVENT_NONE)
+                  }
+              }
+              game.EVENT_LEFT -> {
+                  selector(selector_array[active_selector], game.EVENT_LEFT)
+              }
+              game.EVENT_RIGHT -> {
+                  ; pass to active selector
+                  selector(selector_array[active_selector], game.EVENT_RIGHT)
+              }
+              game.EVENT_NEW_GAME -> {
+                  ; pressed START, so play game
+                  done = true
+              }
+              game.EVENT_LEAVE_GAME -> {
+                  ; pressed button C ("help" in menu), call help
+                  return 255    ; signal we want the help screen.
+              }
+          }
+          ; debug
+        } until done
+        ; keep track of menu selections.
+        last_level = levels.index
+        last_gamepad = gamepads.index
+        ; return difficulty level (0 based)
+        return levels.index
+    }
+
 }
 
 cbm {
