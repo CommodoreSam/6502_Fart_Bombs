@@ -41,7 +41,7 @@ platform {
     ubyte[5] grid_width = [12,24,30,36,36]
     ubyte[5] grid_height =[12,15,19,19,19]
     ubyte[5] grid_density = [11,10,8,8,7] ;lower number means more bombs
-    ubyte[7] grid_mode = [40,40,40,40,80,80,80] ;screen mode for this difficulty level
+    ubyte[5] grid_mode = [40,40,40,40,40] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
     ubyte restore_height = 0                    ; video mode to restore to on exit
     ubyte restore_bdcolor = 0                   ; save border color
@@ -100,11 +100,17 @@ platform {
     ; index of gamepad selector is the input device we use
     ; NOTE: we can't use GETIN2 *and* keyboard joystick input
     ; or we get double events. (so input_keyboard commented out above)
+    bool last_dpad_up
+    bool last_dpad_down
+    bool last_dpad_left
+    bool last_dpad_right
+    bool last_button_a
+    bool fire_overload
     alias active_input = game.last_gamepad
-    sub input_scan() -> ubyte {
+    sub input_scan(bool scan_all) -> ubyte {
         ubyte key = cbm.GETIN2()
+        uword snes
         when key {
-            'l' -> return game.EVENT_LEAVE_GAME
             136 -> return game.EVENT_CONFIG
             'n', 13 -> return game.EVENT_NEW_GAME
             'a', 157 -> return game.EVENT_LEFT
@@ -112,26 +118,62 @@ platform {
             's', 17 -> return game.EVENT_DOWN
             'w', 145 -> return game.EVENT_UP
             'f' -> return game.EVENT_FLAG
+            'h' -> return game.EVENT_HELP
             ' ' -> return game.EVENT_UNCOVER
         }
-        uword snes = input.get(active_input)
+        if scan_all {
+            input.scan_all()
+
+            if input.dpad_up != last_dpad_up and input.dpad_up == true {
+                last_dpad_up = input.dpad_up
+                return game.EVENT_UP
+            }
+            if input.dpad_down != last_dpad_down and input.dpad_down == true {
+                last_dpad_down = input.dpad_down
+                return game.EVENT_DOWN
+            }
+            if input.dpad_left != last_dpad_left and input.dpad_left == true {
+                last_dpad_left = input.dpad_left
+                return game.EVENT_LEFT
+            }
+            if input.dpad_right != last_dpad_right and input.dpad_right == true {
+                last_dpad_right = input.dpad_right
+                return game.EVENT_RIGHT
+            }
+            if input.button_a != last_button_a and input.button_a == true {
+                last_button_a = input.button_a
+                return game.EVENT_FLAG
+            }
+            last_dpad_up = input.dpad_up
+            last_dpad_down = input.dpad_down
+            last_dpad_left = input.dpad_left
+            last_dpad_right = input.dpad_right
+            last_button_a = input.button_a
+            return game.EVENT_NONE
+        } else {
+            snes = input.get(active_input)
+        }
         if snes == last_scan return game.EVENT_NONE
         last_scan = snes
-        if (snes & input.BUTTON_A) == 0 {                                   ; fire pressed
-            if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NONE
-            if (snes & input.DPAD_UP) == 0 return game.EVENT_UNCOVER
-            if (snes & input.DPAD_DOWN) == 0 return game.EVENT_FLAG
-            if (snes & input.DPAD_LEFT) == 0 return game.EVENT_LEAVE_GAME
-            if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_NEW_GAME
-        } else {                                                            ; normal
-            if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NONE
-            if (snes & input.DPAD_UP) == 0 return game.EVENT_UP
-            if (snes & input.DPAD_DOWN) == 0 return game.EVENT_DOWN
-            if (snes & input.DPAD_LEFT) == 0 return game.EVENT_LEFT
-            if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_RIGHT
+        if fire_overload {
+            if (snes & input.BUTTON_A) == 0 {                                   ; fire pressed
+                if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NONE
+                if (snes & input.DPAD_UP) == 0 return game.EVENT_UNCOVER
+                if (snes & input.DPAD_DOWN) == 0 return game.EVENT_FLAG
+                if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_NEW_GAME
+            }
             if (snes & input.BUTTON_B) == 0 return game.EVENT_FLAG
             if (snes & input.BUTTON_X) == 0 return game.EVENT_UNCOVER
+        } else {                                                            ; normal
+            if ((snes & input.DPAD_UP) == 0) and ((snes & input.DPAD_DOWN) == 0) return game.EVENT_NEW_GAME
+            if (snes & input.BUTTON_A) == 0 return game.EVENT_FLAG
+            if (snes & input.BUTTON_B) == 0 return game.EVENT_UNCOVER
+            if (snes & input.BUTTON_X) == 0 return game.EVENT_NEW_GAME
         }
+        if (snes & input.DPAD_UP) == 0 return game.EVENT_UP
+        if (snes & input.DPAD_DOWN) == 0 return game.EVENT_DOWN
+        if (snes & input.DPAD_LEFT) == 0 return game.EVENT_LEFT
+        if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_RIGHT
         return game.EVENT_NONE
     }
 
@@ -318,7 +360,7 @@ game {
         ; these are events in the *menu* not gameplay so
         ; might seem slightly confusing. :)
         do {
-          when platform.input_scan() {
+          when platform.input_scan(false) {
               game.EVENT_LEFT -> {
                   selector(yesno, game.EVENT_LEFT)
               }
@@ -402,17 +444,13 @@ game {
 
         txt.plot(menu_offset+2,17)
         txt.color(board_fgcolor)
-        txt.print("press ")
+        txt.print("go back ")
         txt.color(board_tile_flagcolor)
-        txt.print("c")
-        txt.color(board_fgcolor)
-        txt.print(" for ")
-        txt.color(board_scorecolor)
-        txt.print("menu")
+        txt.print("a/fire")
         txt.color(board_fgcolor)
 
-        ; wait for specific button (C)
-        while platform.input_scan() != game.EVENT_LEAVE_GAME {}
+        ; wait for input
+        while platform.input_scan(true) == game.EVENT_NONE {}
     }
 
     sub draw_splash() {
@@ -429,7 +467,7 @@ game {
             txt.plot(menu_offset+1,2)
             txt.print(" 6502 fart b*mbs! ")
             txt.plot(menu_offset+1,3)
-            txt.print("      v2.3        ")
+            txt.print("      v2.4        ")
             txt.plot(menu_offset+1,4)
             txt.print("                  ")
             txt.rvs_off()
@@ -438,13 +476,13 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            txt.plot(menu_offset+2,15)
+            txt.plot(menu_offset+1,15)
             txt.color(board_fgcolor)
             txt.print("press ")
             txt.color(board_tile_flagcolor)
-            txt.print("s")
+            txt.print("fire")
             txt.color(board_fgcolor)
-            txt.print(" or ")
+            txt.print(" to ")
             txt.color(board_tile_flagcolor)
             txt.print("start")
             txt.color(board_fgcolor)
@@ -453,7 +491,7 @@ game {
             txt.color(board_fgcolor)
             txt.print("press ")
             txt.color(board_tile_flagcolor)
-            txt.print("c")
+            txt.print("h")
             txt.color(board_fgcolor)
             txt.print(" for ")
             txt.color(board_scorecolor)
@@ -487,9 +525,10 @@ game {
         str level3 = "level 03"
         str level4 = "level 04"
         str level5 = "level 05"
+        str level6 = "level 06"
+        str level7 = "level 07"
         ; zero terminated probably a waste of bytes as we should known size.
-        uword[5] @nosplit leveltext = [level1, level2, level3, level4, level5]
-
+        uword[7] @nosplit leveltext = [level1, level2, level3, level4, level5, level6, level7]
 ;        str gamepad1 = "controller 1"
 ;        str gamepad2 = "controller 2"
 ;        uword[2] @nosplit gamepadtext = [gamepad1, gamepad2]
@@ -511,7 +550,7 @@ game {
         ; ends up in ram
         ^^Selector levels = memory("levels", sizeof(Selector), 1)
         levels.index = last_level
-        levels.num = 5
+        levels.num = platform.max_difficulty
         levels.column = 13
         levels.row = 10
         levels.width = 8
@@ -548,49 +587,50 @@ game {
         do {
             ; this is used to seed rnd(), varies by user input delay
 ;            platform.prngcnt++
-          when platform.input_scan() {
-              game.EVENT_UP -> {
-                  if active_selector > 0 {
+            last_gamepad = gamepads.index
+            when platform.input_scan(true) {
+                EVENT_UP -> {
+                    if active_selector > 0 {
                     ; deactivate old selector & redraw it
                     temp = selector_array[active_selector]
                     temp.active = false
-                    selector(temp, game.EVENT_NONE)
+                    selector(temp, EVENT_NONE)
 
                     active_selector--
 
                     ; activate new selector & redraw it
                     temp = selector_array[active_selector]
                     temp.active = true
-                    selector(temp, game.EVENT_NONE)
+                    selector(temp, EVENT_NONE)
                   }
               }
-              game.EVENT_DOWN -> {
+              EVENT_DOWN -> {
                   if active_selector < 1 {
                     ; deactivate old selector & redraw it
                     temp = selector_array[active_selector]
                     temp.active = false
-                    selector(temp, game.EVENT_NONE)
+                    selector(temp, EVENT_NONE)
 
                     active_selector++
 
                     ; activate new selector & redraw it
                     temp = selector_array[active_selector]
                     temp.active = true
-                    selector(temp, game.EVENT_NONE)
+                    selector(temp, EVENT_NONE)
                   }
               }
-              game.EVENT_LEFT -> {
-                  selector(selector_array[active_selector], game.EVENT_LEFT)
+              EVENT_LEFT -> {
+                  selector(selector_array[active_selector], EVENT_LEFT)
               }
-              game.EVENT_RIGHT -> {
+              EVENT_RIGHT -> {
                   ; pass to active selector
-                  selector(selector_array[active_selector], game.EVENT_RIGHT)
+                  selector(selector_array[active_selector], EVENT_RIGHT)
               }
-              game.EVENT_NEW_GAME -> {
+              EVENT_NEW_GAME, EVENT_FLAG, EVENT_UNCOVER -> {
                   ; pressed START, so play game
                   done = true
               }
-              game.EVENT_LEAVE_GAME -> {
+              EVENT_HELP -> {
                   ; pressed button C ("help" in menu), call help
                   return 255    ; signal we want the help screen.
               }
@@ -599,7 +639,13 @@ game {
         } until done
         ; keep track of menu selections.
         last_level = levels.index
-        last_gamepad = gamepads.index
+;        ^^input.Device tmp_device
+        tmp_device = input.getdev(gamepads.index)
+        if (tmp_device.buttons < 2) {
+            platform.fire_overload = true
+        } else {
+            platform.fire_overload = false
+        }
         ; return difficulty level (0 based)
         return levels.index
     }

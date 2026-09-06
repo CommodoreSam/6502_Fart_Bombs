@@ -47,7 +47,7 @@ game {
     const ubyte EVENT_UNCOVER = 5
     const ubyte EVENT_FLAG = 6
     const ubyte EVENT_NEW_GAME = 7
-    const ubyte EVENT_LEAVE_GAME = 8
+    const ubyte EVENT_HELP = 8
     const ubyte EVENT_CONFIG = 9
 
    sub set_boardsize(ubyte columns, ubyte rows) {
@@ -339,15 +339,8 @@ game {
             if cbm.STOP2()
                 return 0
 
-            ubyte event = platform.input_scan()
+            ubyte event = platform.input_scan(false)
             when event {
-                EVENT_LEAVE_GAME -> {                                ;quit/leave
-                    again_answer = play_again('q')
-                    if again_answer == 'y'
-                        return 0
-                    else
-                        draw_menu()
-                }
                 EVENT_CONFIG -> {                                ;toggle sound
                     platform.sound_toggle()
                 }
