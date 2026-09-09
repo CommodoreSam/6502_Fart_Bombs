@@ -50,11 +50,11 @@ platform {
     bool sound_on
     bool first_time = true
     ;temporary labels for controls
-    str[3] input_direction = ["wasd","u/d/l/r","u/d/l/r"]
-    str[3] input_flag = ["f","fire+down","a"]
-    str[3] input_uncover = ["u","fire+up","b"]
-    str[3] input_new = ["n","fire+right","x"]
-    str[3] input_help = ["c","fire+left/c","c"]
+    str[6] input_direction = ["wasd","u/d/l/r","u/d/l/r","u/d/l/r","u/d/l/r","u/d/l/r"]
+    str[6] input_flag = ["f","fire+down","fire+down","a","a","a"]
+    str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
+    str[6] input_new = ["n","fire+right","fire+right","x","x","x"]
+    str[6] input_help = ["c","fire+left/c","fire+left/c","c","c","c"]
 
     sub cleanup() {
 
@@ -393,66 +393,71 @@ game {
         txt.cls()
         platform.splash_back()
         txt.rvs_on()
-        txt.plot(menu_offset+1,2)
-        txt.print(" object ")
+        txt.plot(menu_offset+1,1)
+        txt.print(" help ")
         txt.rvs_off()
         txt.plot(menu_offset+1,3)
         txt.color(board_scorecolor)
-        txt.print("-clear tiles.")
+        txt.print("object:")
         txt.plot(menu_offset+1,4)
-        txt.print("-flag bomb tiles.")
+        txt.color(board_scorecolor)
+        txt.print("-clear tiles.")
         txt.plot(menu_offset+1,5)
-        txt.print("-number tiles")
+        txt.print("-flag bomb tiles.")
         txt.plot(menu_offset+1,6)
-        txt.print(" show bombs next")
+        txt.print("-number tiles")
         txt.plot(menu_offset+1,7)
-        txt.print(" to that tile.")
+        txt.print(" show bombs next")
         txt.plot(menu_offset+1,8)
+        txt.print(" to that tile.")
+        txt.plot(menu_offset+1,9)
         txt.print("-don't hit a b*mb!")
         txt.color(board_fgcolor)
-        txt.plot(menu_offset+1,10)
+        txt.plot(menu_offset+1,11)
         txt.rvs_on()
-        txt.print(" gamepad control ")
+        txt.print(" game control ")
         txt.rvs_off()
         txt.plot(menu_offset+1,12)
         txt.color(board_scorecolor)
+        txt.print("use " + "controller")
+        txt.plot(menu_offset+1,13)
         txt.print("move:")
-        txt.plot(menu_offset+9,12)
+        txt.plot(menu_offset+9,13)
         txt.color(board_fgcolor)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("dpad")
+        txt.print(platform.input_direction[platform.active_input])
         txt.rvs_off()
-        txt.plot(menu_offset+1,13)
+        txt.plot(menu_offset+1,14)
         txt.color(board_scorecolor)
         txt.print("uncover:")
         txt.color(board_fgcolor)
-        txt.plot(menu_offset+9,13)
+        txt.plot(menu_offset+9,14)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("b")
+        txt.print(platform.input_uncover[platform.active_input])
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.plot(menu_offset+1,14)
+        txt.plot(menu_offset+1,15)
         txt.print("flag:")
-        txt.plot(menu_offset+9,14)
+        txt.plot(menu_offset+9,15)
         txt.color(board_fgcolor)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("a")
+        txt.print(platform.input_flag[platform.active_input])
         txt.rvs_off()
 
-        txt.plot(menu_offset+1,15)
+        txt.plot(menu_offset+1,16)
         txt.color(board_scorecolor)
         txt.print("mark b*mbs to win")
         txt.color(board_tile_flagcolor)
         txt.chrout(game.board_tile_flag)
 
-        txt.plot(menu_offset+2,17)
+        txt.plot(menu_offset+1,18)
         txt.color(board_fgcolor)
-        txt.print("go back ")
+        txt.print("exit help ")
         txt.color(board_tile_flagcolor)
-        txt.print("a/fire")
+        txt.print(platform.input_help[platform.active_input])
         txt.color(board_fgcolor)
 
         ; wait for input
