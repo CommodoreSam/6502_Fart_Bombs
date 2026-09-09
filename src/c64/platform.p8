@@ -49,6 +49,12 @@ platform {
     ubyte restore_color = 0                     ; save text color color
     bool sound_on
     bool first_time = true
+    ;temporary labels for controls
+    str[3] input_direction = ["wasd","u/d/l/r","u/d/l/r"]
+    str[3] input_flag = ["f","fire+down","a"]
+    str[3] input_uncover = ["u","fire+up","b"]
+    str[3] input_new = ["n","fire+right","x"]
+    str[3] input_help = ["c","fire+left/c","c"]
 
     sub cleanup() {
 
@@ -118,7 +124,7 @@ platform {
             's', 17 -> return game.EVENT_DOWN
             'w', 145 -> return game.EVENT_UP
             'f' -> return game.EVENT_FLAG
-            'h' -> return game.EVENT_HELP
+            'c' -> return game.EVENT_HELP
             ' ' -> return game.EVENT_UNCOVER
         }
         if scan_all {
@@ -476,26 +482,26 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            txt.plot(menu_offset+1,15)
-            txt.color(board_fgcolor)
-            txt.print("press ")
+            txt.plot(menu_offset+2,15)
+;            txt.color(board_fgcolor)
+;            txt.print("press ")
             txt.color(board_tile_flagcolor)
-            txt.print("fire")
+            txt.print("fire/a")
             txt.color(board_fgcolor)
             txt.print(" to ")
             txt.color(board_tile_flagcolor)
             txt.print("start")
             txt.color(board_fgcolor)
 
-            txt.plot(menu_offset+2,17)
-            txt.color(board_fgcolor)
-            txt.print("press ")
+            txt.plot(menu_offset+1,17)
+;            txt.color(board_fgcolor)
+;            txt.print("press ")
             txt.color(board_tile_flagcolor)
-            txt.print("h")
+            txt.print("c")
             txt.color(board_fgcolor)
             txt.print(" for ")
-            txt.color(board_scorecolor)
-            txt.print("help")
+            txt.color(board_tile_flagcolor)
+            txt.print("control help")
             txt.color(board_fgcolor)
 
             ; call new selector handling
