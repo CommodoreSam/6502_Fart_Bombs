@@ -50,11 +50,11 @@ platform {
     bool sound_on
     bool first_time = true
     ;temporary labels for controls
-    str[6] input_direction = ["wasd","u/d/l/r","u/d/l/r","u/d/l/r","u/d/l/r","u/d/l/r"]
-    str[6] input_flag = ["f","fire+down","fire+down","a","a","a"]
+    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/ly/ry","up/dn/lt/rt","up/dn/lt/rt"]
+    str[6] input_flag = ["f","fire+dn","fire+dn","a","a","a"]
     str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
-    str[6] input_new = ["n","fire+right","fire+right","x","x","x"]
-    str[6] input_help = ["c","fire+left/c","fire+left/c","c","c","c"]
+    str[6] input_new = ["n","fire+rt","fire+rt","x","x","x"]
+    str[6] input_help = ["c","fire+lt/c","fire+lt/c","c","c","c"]
 
     sub cleanup() {
 
