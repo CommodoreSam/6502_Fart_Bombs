@@ -447,13 +447,11 @@ game {
         txt.rvs_on()
         txt.print(platform.input_flag[platform.active_input])
         txt.rvs_off()
-
         txt.plot(menu_offset+1,16)
         txt.color(board_scorecolor)
         txt.print("mark b*mbs to win")
         txt.color(board_tile_flagcolor)
         txt.chrout(game.board_tile_flag)
-
         txt.plot(menu_offset+1,18)
         txt.color(board_fgcolor)
         txt.print("exit help ")
