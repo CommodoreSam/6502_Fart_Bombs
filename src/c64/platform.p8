@@ -54,7 +54,8 @@ platform {
     str[6] input_flag = ["f","fire+dn","fire+dn","a","a","a"]
     str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
     str[6] input_new = ["n","fire+rt","fire+rt","x","x","x"]
-    str[6] input_help = ["c","fire+lt/c","fire+lt/c","c","c","c"]
+    str[6] input_help = ["c","c","c","c","c","c"]
+    str[6] input_start = ["a","fire/a","fire/a","fire/a","fire/a","fire/a"]
 
     sub cleanup() {
 
@@ -486,22 +487,20 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            txt.plot(menu_offset+2,15)
-;            txt.color(board_fgcolor)
-;            txt.print("press ")
+            ubyte menu_offset_add = (strings.length(platform.input_start[platform.active_input]) + 9) / 2)
+            txt.plot(menu_offset+menu_offset_add,15)
             txt.color(board_tile_flagcolor)
-            txt.print("fire/a")
+            txt.print(platform.input_start[platform.active_input])
             txt.color(board_fgcolor)
             txt.print(" to ")
             txt.color(board_tile_flagcolor)
             txt.print("start")
             txt.color(board_fgcolor)
 
-            txt.plot(menu_offset+1,17)
-;            txt.color(board_fgcolor)
-;            txt.print("press ")
+            menu_offset_add = (strings.length(platform.input_help[platform.active_input]) + 17) / 2
+            txt.plot(menu_offset+menu_offset_add,17)
             txt.color(board_tile_flagcolor)
-            txt.print("c")
+            txt.print(platform.input_help[platform.active_input])
             txt.color(board_fgcolor)
             txt.print(" for ")
             txt.color(board_tile_flagcolor)
