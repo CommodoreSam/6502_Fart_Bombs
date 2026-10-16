@@ -487,7 +487,7 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            ubyte menu_offset_add = (strings.length(platform.input_start[platform.active_input]) + 9) / 2)
+            ubyte menu_offset_add = ((strings.length(platform.input_start[platform.active_input]) + 9) / 2)
             txt.plot(menu_offset+menu_offset_add,15)
             txt.color(board_tile_flagcolor)
             txt.print(platform.input_start[platform.active_input])
@@ -660,6 +660,7 @@ game {
     }
 
 }
+
 
 cbm {
 %option merge
