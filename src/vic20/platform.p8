@@ -8,7 +8,7 @@ platform {
 
     ubyte screen_width = txt.DEFAULT_WIDTH
     ubyte screen_height = txt.DEFAULT_HEIGHT
-    const ubyte title_width = 40
+    const ubyte title_width = 20
     ubyte[22] row0
     ubyte[22] row1
     ubyte[22] row2
@@ -453,7 +453,7 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            ubyte menu_offset_add = ((strings.length(platform.input_start[platform.active_input]) + 9) / 2)
+            ubyte menu_offset_add = ((platform.screen_width - (strings.length(platform.input_start[platform.active_input]) + 9)) / 2) - menu_offset
             txt.plot(menu_offset+menu_offset_add,15)
             txt.color(board_tile_flagcolor)
             txt.print(platform.input_start[platform.active_input])
@@ -463,7 +463,7 @@ game {
             txt.print("start")
             txt.color(board_fgcolor)
 
-            menu_offset_add = (strings.length(platform.input_help[platform.active_input]) + 17) / 2
+            menu_offset_add = ((platform.screen_width - (strings.length(platform.input_help[platform.active_input]) + 17)) / 2) - menu_offset
             txt.plot(menu_offset+menu_offset_add,17)
             txt.color(board_tile_flagcolor)
             txt.print(platform.input_help[platform.active_input])
