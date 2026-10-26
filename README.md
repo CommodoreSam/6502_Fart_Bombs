@@ -9,7 +9,7 @@ The program is written in Prog8 using IntelliJ on a Mac. So to compile you will 
 
 MIT License
 
-Copyright (c) 2025 Sammy D. Cook (aka @CommodoreSam)
+Copyright (c) 2026 Sammy D. Cook (aka @CommodoreSam)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

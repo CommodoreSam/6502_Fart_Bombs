@@ -526,7 +526,7 @@ game {
         ^^Selector levels = memory("levels", sizeof(Selector), 1)
         levels.index = last_level
         levels.num = platform.max_difficulty
-        levels.column = 13
+        levels.column = 4
         levels.row = 10
         levels.width = 8
         levels.active = true
@@ -535,7 +535,7 @@ game {
         ^^Selector gamepads = memory("gamepads", sizeof(Selector), 1)
         gamepads.index = last_gamepad
         gamepads.num = dev_count
-        gamepads.column = 10
+        gamepads.column = 1
         gamepads.row = 12
         gamepads.width = 21
         gamepads.active = false
