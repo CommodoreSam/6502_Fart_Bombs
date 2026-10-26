@@ -1,5 +1,9 @@
 %import psg
 %import input
+%import input_keyboard
+;%import input_joykey
+%import input_snes
+%import input_platform
 
 platform {
 
@@ -72,7 +76,7 @@ platform {
                             row31, row32, row33, row34, row35, row36, row37, row38, row39, row40,
                             row41, row42, row43, row44, row45, row46, row47, row48, row49, row50,
                             row51, row52, row53, row54, row55, row56, row57, row58, row59]
-    ubyte max_difficulty = 4
+    ubyte max_difficulty = 7
     ubyte[7] grid_width = [12,22,30,36,60,76,76]
     ubyte[7] grid_height =[12,20,24,24,50,50,50]
     ubyte[7] grid_density = [11,10,9,8,10,10,9] ;lower number means more bombs
@@ -129,8 +133,8 @@ platform {
         void, screen_width, screen_height = cx16.get_screen_mode()
         ubyte menu_offset = platform.screen_width / 2 - 10
         restore_width = screen_width
-        if screen_width == 80 and screen_height == 60
-            max_difficulty = 7
+;        if screen_width == 80 and screen_height == 60
+;            max_difficulty = 7
     }
 
     bool last_timer = false
@@ -174,6 +178,7 @@ platform {
     bool fire_overload
     alias active_input = game.last_gamepad
     sub input_scan(bool scan_all) -> ubyte {
+;        return game.EVENT_NONE
         ubyte key = cbm.GETIN2()
         uword snes
         when key {
@@ -534,7 +539,7 @@ game {
             txt.plot(menu_offset,7)
             txt.print("  & andrew gillham")
 
-            ubyte menu_offset_add = ((strings.length(platform.input_start[platform.active_input]) + 9) / 2)
+            ubyte menu_offset_add = ((platform.screen_width - (strings.length(platform.input_start[platform.active_input]) + 9)) / 2) - menu_offset
             txt.plot(menu_offset+menu_offset_add,15)
             txt.color(board_tile_flagcolor)
             txt.print(platform.input_start[platform.active_input])
@@ -544,7 +549,7 @@ game {
             txt.print("start")
             txt.color(board_fgcolor)
 
-            menu_offset_add = (strings.length(platform.input_help[platform.active_input]) + 17) / 2
+            menu_offset_add = ((platform.screen_width - (strings.length(platform.input_help[platform.active_input]) + 17)) / 2) - menu_offset
             txt.plot(menu_offset+menu_offset_add,17)
             txt.color(board_tile_flagcolor)
             txt.print(platform.input_help[platform.active_input])
