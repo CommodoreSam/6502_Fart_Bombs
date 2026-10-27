@@ -504,7 +504,7 @@ game {
             txt.color(board_fgcolor)
             txt.print(" for ")
             txt.color(board_tile_flagcolor)
-            txt.print("control help")
+            txt.print("instructions")
             txt.color(board_fgcolor)
 
             ; call new selector handling
