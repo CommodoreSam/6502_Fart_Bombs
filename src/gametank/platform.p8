@@ -42,6 +42,12 @@ platform {
     ubyte restore_color = 0                     ; save text color color
     bool sound_on
     bool first_time = true
+    ;temporary labels for controls
+    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/ly/ry","up/dn/lt/rt","up/dn/lt/rt"]
+    str[6] input_flag = ["f","fire+dn","fire+dn","a","a","a"]
+    str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
+    str[6] input_new = ["n","fire+rt","fire+rt","x","x","x"]
+    str[6] input_help = ["c","fire+lt/c","fire+lt/c","c","c","c"]
 
     sub cleanup() {
         ; so the exit message looks ok.
@@ -127,7 +133,7 @@ platform {
 
     uword last_scan
     ubyte active_input
-    sub input_scan() -> ubyte {
+    sub input_scan(bool scan_all) -> ubyte {
         uword snes = input.get(active_input) ; gamepad port 1
         if snes == last_scan return game.EVENT_NONE
         last_scan = snes
@@ -139,7 +145,7 @@ platform {
         if (snes & input.DPAD_RIGHT) == 0 return game.EVENT_RIGHT
         if (snes & input.BUTTON_A) == 0 return game.EVENT_FLAG
         if (snes & input.BUTTON_B) == 0 return game.EVENT_UNCOVER
-        if (snes & input.BUTTON_X) == 0 return game.EVENT_LEAVE_GAME
+        if (snes & input.BUTTON_X) == 0 return game.EVENT_HELP
         if (snes & input.BUTTON_START) == 0 return game.EVENT_NEW_GAME
         return game.EVENT_NONE
     }
@@ -274,7 +280,7 @@ game {
         ; these are events in the *menu* not gameplay so
         ; might seem slightly confusing. :)
         do {
-          when platform.input_scan() {
+          when platform.input_scan(false) {
               game.EVENT_LEFT -> {
                   selector(yesno, game.EVENT_LEFT)
               }
@@ -301,74 +307,74 @@ game {
         txt.cls()
         platform.splash_back()
         txt.rvs_on()
-        txt.plot(menu_offset+1,2)
-        txt.print(" object ")
+        txt.plot(menu_offset+1,1)
+        txt.print(" help ")
         txt.rvs_off()
         txt.plot(menu_offset+1,3)
         txt.color(board_scorecolor)
-        txt.print("-clear tiles.")
+        txt.print("object:")
         txt.plot(menu_offset+1,4)
-        txt.print("-flag bomb tiles.")
+        txt.color(board_scorecolor)
+        txt.print("-clear tiles.")
         txt.plot(menu_offset+1,5)
-        txt.print("-number tiles")
+        txt.print("-flag bomb tiles.")
         txt.plot(menu_offset+1,6)
-        txt.print(" show bombs next")
+        txt.print("-number tiles")
         txt.plot(menu_offset+1,7)
-        txt.print(" to that tile.")
+        txt.print(" show bombs next")
         txt.plot(menu_offset+1,8)
+        txt.print(" to that tile.")
+        txt.plot(menu_offset+1,9)
         txt.print("-don't hit a b*mb!")
         txt.color(board_fgcolor)
-        txt.plot(menu_offset+1,10)
+        txt.plot(menu_offset+1,11)
         txt.rvs_on()
-        txt.print(" gamepad control ")
+        txt.print(" game control ")
         txt.rvs_off()
         txt.plot(menu_offset+1,12)
         txt.color(board_scorecolor)
+        txt.print("use ")
+        txt.print(game.title_menu.gamepadtext[game.last_gamepad])
+        txt.plot(menu_offset+1,13)
         txt.print("move:")
-        txt.plot(menu_offset+9,12)
+        txt.plot(menu_offset+9,13)
         txt.color(board_fgcolor)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("dpad")
+        txt.print(platform.input_direction[platform.active_input])
         txt.rvs_off()
-        txt.plot(menu_offset+1,13)
+        txt.plot(menu_offset+1,14)
         txt.color(board_scorecolor)
         txt.print("uncover:")
         txt.color(board_fgcolor)
-        txt.plot(menu_offset+9,13)
+        txt.plot(menu_offset+9,14)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("b")
+        txt.print(platform.input_uncover[platform.active_input])
         txt.rvs_off()
         txt.color(board_scorecolor)
-        txt.plot(menu_offset+1,14)
+        txt.plot(menu_offset+1,15)
         txt.print("flag:")
-        txt.plot(menu_offset+9,14)
+        txt.plot(menu_offset+9,15)
         txt.color(board_fgcolor)
         txt.chrout(10)
         txt.rvs_on()
-        txt.print("a")
+        txt.print(platform.input_flag[platform.active_input])
         txt.rvs_off()
-
-        txt.plot(menu_offset+1,15)
+        txt.plot(menu_offset+1,16)
         txt.color(board_scorecolor)
         txt.print("mark b*mbs to win")
         txt.color(board_tile_flagcolor)
         txt.chrout(game.board_tile_flag)
-
-        txt.plot(menu_offset+2,17)
+        txt.plot(menu_offset+1,18)
         txt.color(board_fgcolor)
-        txt.print("press ")
+        txt.print("exit help ")
         txt.color(board_tile_flagcolor)
-        txt.print("c")
-        txt.color(board_fgcolor)
-        txt.print(" for ")
-        txt.color(board_scorecolor)
-        txt.print("menu")
+        txt.print(platform.input_help[platform.active_input])
         txt.color(board_fgcolor)
 
-        ; wait for specific button (C)
-        while platform.input_scan() != game.EVENT_LEAVE_GAME {}
+        ; wait for input
+        while platform.input_scan(true) == game.EVENT_NONE {}
     }
 
     sub draw_menu() {
@@ -414,7 +420,7 @@ game {
             txt.plot(menu_offset+1,2)
             txt.print(" 6502 fart b*mbs! ")
             txt.plot(menu_offset+1,3)
-            txt.print("      v2.3        ")
+            txt.print("      v2.4        ")
             txt.plot(menu_offset+1,4)
             txt.print("                  ")
             txt.rvs_off()
@@ -542,7 +548,7 @@ game {
         do {
             ; this is used to seed rnd(), varies by user input delay
             platform.prngcnt++
-          when platform.input_scan() {
+          when platform.input_scan(false) {
               game.EVENT_UP -> {
                   if active_selector > 0 {
                     ; deactivate old selector & redraw it
@@ -588,7 +594,7 @@ game {
                   ; pressed START, so play game
                   done = true
               }
-              game.EVENT_LEAVE_GAME -> {
+              game.EVENT_HELP -> {
                   ; pressed button C ("help" in menu), call help
                   return 255    ; signal we want the help screen.
               }

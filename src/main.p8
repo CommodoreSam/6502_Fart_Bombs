@@ -509,6 +509,7 @@ game {
         ;anytime a choice to play again happens win, lose, quit/leave
         ;returns the again answer
         ubyte again = 'x'
+        ubyte menu_offset_add = ((platform.screen_width - (strings.length(platform.input_help[platform.active_input]) + 17)) / 2) - menu_offset
         txt.color(board_scorecolor)
         txt.plot(menu_offset,board_topy + row_count)
         txt.print("                    ")
