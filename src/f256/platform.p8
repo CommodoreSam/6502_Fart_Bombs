@@ -104,7 +104,6 @@ platform {
         }
     }
 
-
     sub set_screen_mode(ubyte mode) {
         ubyte temp = 0 
         when mode {
