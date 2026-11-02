@@ -103,6 +103,7 @@ platform {
             }
         }
     }
+
     uword last_scan
     ; index of gamepad selector is the input device we use
     ; NOTE: we can't use GETIN2 *and* keyboard joystick input

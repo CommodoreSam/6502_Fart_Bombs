@@ -198,6 +198,7 @@ platform {
             }
         }
     }
+
     uword last_scan
     ; index of gamepad selector is the input device we use
     ; NOTE: we can't use GETIN2 *and* keyboard joystick input
@@ -539,7 +540,7 @@ game {
         txt.print(blank)
         txt.plot(menu_offset+menu_offset_add,line_start + 1)
         txt.print(blank)
-        draw_menu()
+        ;draw_menu()
     }
 
     sub draw_splash() {
@@ -556,7 +557,7 @@ game {
             txt.plot(menu_offset+1,2)
             txt.print(" 6502 fart b*mbs! ")
             txt.plot(menu_offset+1,3)
-            txt.print("      v2.4        ")
+            txt.print("      v2.5        ")
             txt.plot(menu_offset+1,4)
             txt.print("                  ")
             txt.rvs_off()

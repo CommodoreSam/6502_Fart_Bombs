@@ -58,7 +58,6 @@ game {
         bombs_found=0
         bombs_left=0
         txt.cls()
-        platform.splash_back()
         txt.color(board_fgcolor)
         txt.plot(menu_offset,0)
         txt.rvs_on()
