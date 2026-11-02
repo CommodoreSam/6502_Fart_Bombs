@@ -50,7 +50,7 @@ platform {
     bool sound_on
     bool first_time = true
     ;temporary labels for controls
-    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/ly/ry","up/dn/lt/rt","up/dn/lt/rt"]
+    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt"]
     str[6] input_flag = ["f","fire+dn","fire+dn","a","a","a"]
     str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
     str[6] input_new = ["n","fire+rt","fire+rt","x","x","x"]
@@ -354,7 +354,7 @@ game {
         ^^Selector yesno = memory("yesno", sizeof(Selector), 1)
         yesno.index = 1
         yesno.num = 2
-        yesno.column = 21
+        yesno.column = (platform.grid_mode[game.difficulty] / 2) + 1
         yesno.row = board_topy + row_count + 1
         yesno.width = 3
         yesno.active = true

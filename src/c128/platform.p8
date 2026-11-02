@@ -50,7 +50,7 @@ platform {
     bool sound_on
     bool first_time = true
     ;temporary labels for controls
-    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/ly/ry","up/dn/lt/rt","up/dn/lt/rt"]
+    str[6] input_direction = ["wasd","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt","up/dn/lt/rt"]
     str[6] input_flag = ["f","fire+dn","fire+dn","a","a","a"]
     str[6] input_uncover = ["u","fire+up","fire+up","b","b","b"]
     str[6] input_new = ["n","fire+rt","fire+rt","x","x","x"]
@@ -354,7 +354,7 @@ game {
         ^^Selector yesno = memory("yesno", sizeof(Selector), 1)
         yesno.index = 1
         yesno.num = 2
-        yesno.column = 21
+        yesno.column = (platform.grid_mode[game.difficulty] / 2) + 1
         yesno.row = board_topy + row_count + 1
         yesno.width = 3
         yesno.active = true
@@ -426,7 +426,6 @@ game {
         txt.print("move:")
         txt.plot(menu_offset+9,13)
         txt.color(board_fgcolor)
-        txt.chrout(10)
         txt.rvs_on()
         txt.print(platform.input_direction[platform.active_input])
         txt.rvs_off()
@@ -435,7 +434,6 @@ game {
         txt.print("uncover:")
         txt.color(board_fgcolor)
         txt.plot(menu_offset+9,14)
-        txt.chrout(10)
         txt.rvs_on()
         txt.print(platform.input_uncover[platform.active_input])
         txt.rvs_off()
@@ -444,7 +442,6 @@ game {
         txt.print("flag:")
         txt.plot(menu_offset+9,15)
         txt.color(board_fgcolor)
-        txt.chrout(10)
         txt.rvs_on()
         txt.print(platform.input_flag[platform.active_input])
         txt.rvs_off()
@@ -504,7 +501,7 @@ game {
             txt.color(board_fgcolor)
             txt.print(" for ")
             txt.color(board_tile_flagcolor)
-            txt.print("control help")
+            txt.print("instructions")
             txt.color(board_fgcolor)
 
             ; call new selector handling

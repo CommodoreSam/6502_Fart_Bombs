@@ -406,7 +406,7 @@ game {
         ^^Selector yesno = memory("yesno", sizeof(Selector), 1)
         yesno.index = 1
         yesno.num = 2
-        yesno.column = 21
+        yesno.column = (platform.grid_mode[game.difficulty] / 2) + 1
         yesno.row = board_topy + row_count + 1
         yesno.width = 3
         yesno.active = true

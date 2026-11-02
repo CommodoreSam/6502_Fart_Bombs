@@ -34,7 +34,7 @@ platform {
     ubyte[5] grid_width = [10,12,14,16,22]
     ubyte[5] grid_height =[10,12,12,12,14]
     ubyte[5] grid_density = [10,10,8,8,7] ;lower number means more bombs
-    ubyte[7] grid_mode = [40,40,40,40,40,40,40] ;screen mode for this difficulty level
+    ubyte[7] grid_mode = [22,22,22,22,22,22,22] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
     ubyte restore_height = 0                    ; video mode to restore to on exit
     ubyte restore_bdcolor = 0                   ; save border color
@@ -267,7 +267,7 @@ game {
         ^^Selector yesno = memory("yesno", sizeof(Selector), 1)
         yesno.index = 1
         yesno.num = 2
-        yesno.column = 13
+        yesno.column = (platform.grid_mode[game.difficulty] / 2) + 1
         yesno.row = board_topy + row_count + 1
         yesno.width = 3
         yesno.active = true
