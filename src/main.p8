@@ -193,78 +193,6 @@ game {
         txt.color(board_fgcolor)
     }
 
-    sub draw_board_help() {
-        str blank="                   "
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        ubyte menu_offset_add = ((platform.screen_width - (strings.length(platform.input_help[platform.active_input]) + 17)) / 2) - menu_offset
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count)
-        txt.color(board_scorecolor)
-        txt.print("use ")
-        txt.print(game.title_menu.gamepadtext[game.last_gamepad])
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        ; help slide 1
-        txt.print("move: ")
-        txt.color(board_fgcolor)
-        txt.rvs_on()
-        txt.print(platform.input_direction[platform.active_input])
-        txt.rvs_off()
-        sys.wait(120)
-        ; help slide 2
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.color(board_scorecolor)
-        txt.print("uncover: ")
-        txt.color(board_fgcolor)
-        txt.rvs_on()
-        txt.print(platform.input_uncover[platform.active_input])
-        txt.rvs_off()
-        txt.color(board_scorecolor)
-        sys.wait(120)
-        ; help slide 3
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.color(board_scorecolor)
-        txt.print("flag: ")
-        txt.color(board_fgcolor)
-        txt.rvs_on()
-        txt.print(platform.input_flag[platform.active_input])
-        txt.rvs_off()
-        sys.wait(120)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        ; help slide 4
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.color(board_scorecolor)
-        txt.print("new game: ")
-        txt.color(board_fgcolor)
-        txt.rvs_on()
-        txt.print(platform.input_new[platform.active_input])
-        txt.rvs_off()
-        sys.wait(120)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        ; help slide end
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count)
-        txt.print("flag all bombs")
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print("correctly to win!")
-        sys.wait(120)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count)
-        txt.print(blank)
-        txt.plot(menu_offset+menu_offset_add,board_topy + row_count + 1)
-        txt.print(blank)
-        draw_menu()
-    }
-
     sub play() -> ubyte {
         ;actual game play code
         ;constantly waiting on key press and managing user input
@@ -286,7 +214,7 @@ game {
                     platform.sound_toggle()
                 }
                 EVENT_HELP -> {                                ;toggle sound
-                    draw_board_help()
+                    draw_help(board_topy + row_count)
                 }
                 EVENT_NEW_GAME -> {                                ;new game
                     again_answer = play_again('n')

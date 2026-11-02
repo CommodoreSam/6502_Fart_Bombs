@@ -37,7 +37,7 @@ platform {
                             row21, row22]
     ubyte max_difficulty = 6
     ubyte[] grid_width = [12,18,22,22,22,22]
-    ubyte[] grid_height =[12,16,16,16,16,16]
+    ubyte[] grid_height =[12,17,17,17,17,17]
     ubyte[] grid_density = [10,9,8,7,6,5] ;lower number means more bombs
     ubyte[] grid_mode = [22,22,22,22,22,22] ;screen mode for this difficulty level
     ubyte restore_width = 0                     ; video mode to restore to on exit
@@ -356,75 +356,76 @@ game {
     }
 
     ; shows help / object of the game
-    sub draw_help() {
-;        txt.cls()
-;        platform.splash_back()
-;        txt.rvs_on()
-;        txt.plot(menu_offset+1,1)
-;        txt.print(" help ")
-;        txt.rvs_off()
-;        txt.plot(menu_offset+1,3)
-;        txt.color(board_scorecolor)
-;        txt.print("object:")
-;        txt.plot(menu_offset+1,4)
-;        txt.color(board_scorecolor)
-;        txt.print("-clear tiles.")
-;        txt.plot(menu_offset+1,5)
-;        txt.print("-flag bomb tiles.")
-;        txt.plot(menu_offset+1,6)
-;        txt.print("-number tiles")
-;        txt.plot(menu_offset+1,7)
-;        txt.print(" show bombs next")
-;        txt.plot(menu_offset+1,8)
-;        txt.print(" to that tile.")
-;        txt.plot(menu_offset+1,9)
-;        txt.print("-don't hit a b*mb!")
-;        txt.color(board_fgcolor)
-;        txt.plot(menu_offset+1,11)
-;        txt.rvs_on()
-;        txt.print(" game control ")
-;        txt.rvs_off()
-;        txt.plot(menu_offset+1,12)
-;        txt.color(board_scorecolor)
-;        txt.print("use ")
-;        txt.print(game.title_menu.gamepadtext[game.last_gamepad])
-;        txt.plot(menu_offset+1,13)
-;        txt.print("move:")
-;        txt.plot(menu_offset+9,13)
-;        txt.color(board_fgcolor)
-;        txt.rvs_on()
-;        txt.print(platform.input_direction[platform.active_input])
-;        txt.rvs_off()
-;        txt.plot(menu_offset+1,14)
-;        txt.color(board_scorecolor)
-;        txt.print("uncover:")
-;        txt.color(board_fgcolor)
-;        txt.plot(menu_offset+9,14)
-;        txt.rvs_on()
-;        txt.print(platform.input_uncover[platform.active_input])
-;        txt.rvs_off()
-;        txt.color(board_scorecolor)
-;        txt.plot(menu_offset+1,15)
-;        txt.print("flag:")
-;        txt.plot(menu_offset+9,15)
-;        txt.color(board_fgcolor)
-;        txt.rvs_on()
-;        txt.print(platform.input_flag[platform.active_input])
-;        txt.rvs_off()
-;        txt.plot(menu_offset+1,16)
-;        txt.color(board_scorecolor)
-;        txt.print("mark b*mbs to win")
-;        txt.color(board_tile_flagcolor)
-;        txt.chrout(game.board_tile_flag)
-;        txt.plot(menu_offset+1,18)
-;        txt.color(board_fgcolor)
-;        txt.print("exit help ")
-;        txt.color(board_tile_flagcolor)
-;        txt.print(platform.input_help[platform.active_input])
-;        txt.color(board_fgcolor)
-;
-;        ; wait for input
-;        while platform.input_scan(true) == game.EVENT_NONE {}
+    sub draw_help(ubyte line_start) {
+        str blank="                   "
+        txt.plot(menu_offset+menu_offset_add,line_start)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        ubyte menu_offset_add = ((platform.screen_width - (strings.length(platform.input_help[platform.active_input]) + 17)) / 2) - menu_offset
+        txt.plot(menu_offset+menu_offset_add,line_start)
+        txt.color(board_scorecolor)
+        txt.print(" use ")
+        txt.print(game.title_menu.gamepadtext[game.last_gamepad])
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        ; help slide 1
+        txt.print(" move: ")
+        txt.color(board_fgcolor)
+        txt.rvs_on()
+        txt.print(platform.input_direction[platform.active_input])
+        txt.rvs_off()
+        sys.wait(120)
+        ; help slide 2
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.color(board_scorecolor)
+        txt.print(" uncover: ")
+        txt.color(board_fgcolor)
+        txt.rvs_on()
+        txt.print(platform.input_uncover[platform.active_input])
+        txt.rvs_off()
+        txt.color(board_scorecolor)
+        sys.wait(120)
+        ; help slide 3
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.color(board_scorecolor)
+        txt.print(" flag: ")
+        txt.color(board_fgcolor)
+        txt.rvs_on()
+        txt.print(platform.input_flag[platform.active_input])
+        txt.rvs_off()
+        sys.wait(120)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        ; help slide 4
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.color(board_scorecolor)
+        txt.print(" new game: ")
+        txt.color(board_fgcolor)
+        txt.rvs_on()
+        txt.print(platform.input_new[platform.active_input])
+        txt.rvs_off()
+        sys.wait(120)
+        txt.plot(menu_offset+menu_offset_add,line_start)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        ; help slide end
+        txt.plot(menu_offset+menu_offset_add,line_start)
+        txt.print("  flag all bombs")
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(" correctly to win!")
+        sys.wait(120)
+        txt.plot(menu_offset+menu_offset_add,line_start)
+        txt.print(blank)
+        txt.plot(menu_offset+menu_offset_add,line_start + 1)
+        txt.print(blank)
+        draw_menu()
     }
 
     sub draw_splash() {
@@ -441,7 +442,7 @@ game {
             txt.plot(menu_offset+1,2)
             txt.print(" 6502 fart b*mbs! ")
             txt.plot(menu_offset+1,3)
-            txt.print("      v2.4        ")
+            txt.print("      v2.5        ")
             txt.plot(menu_offset+1,4)
             txt.print("                  ")
             txt.rvs_off()
@@ -474,7 +475,7 @@ game {
             ; use 255 as a signal to show help.
             difficulty = title_menu()
             if difficulty == 255 {
-                game.draw_help()
+                game.draw_help(17)
             } else {
                 done = true
             }
